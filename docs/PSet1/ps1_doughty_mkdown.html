@@ -1,0 +1,356 @@
+<head>
+  <link rel="stylesheet" type="text/css" href="stmarkdown.css">
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
+</script>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function() {
+    htmlTableOfContents();
+} );                        
+
+function htmlTableOfContents( documentRef ) {
+    var documentRef = documentRef || document;
+    var toc = documentRef.getElementById("toc");
+//  Use headings inside <article> only:
+//  var headings = [].slice.call(documentRef.body.querySelectorAll('article h1, article h2, article h3, article h4, article h5, article h6'));
+    var headings = [].slice.call(documentRef.body.querySelectorAll('h1, h2, h3, h4, h5, h6'));
+    headings.forEach(function (heading, index) {
+        var ref = "toc" + index;
+        if ( heading.hasAttribute( "id" ) ) 
+            ref = heading.getAttribute( "id" );
+        else
+            heading.setAttribute( "id", ref );
+
+        var link = documentRef.createElement( "a" );
+        link.setAttribute( "href", "#"+ ref );
+        link.textContent = heading.textContent;
+
+        var div = documentRef.createElement( "div" );
+        div.setAttribute( "class", heading.tagName.toLowerCase() );
+        div.appendChild( link );
+        toc.appendChild( div );
+    });
+}
+
+
+try {
+    module.exports = htmlTableOfContents;
+} catch (e) {
+    // module.exports is not defined
+}
+</script>
+</head>
+<h1><a href="#pset-1" id="pset-1">PSet 1</a></h1>
+<p>Michelle Doughty<br />
+ECON 8848</p>
+<p>Began: 2020/01/18<br />
+Updated: 2020/01/27</p>
+<p>Collaborators: Hannah Denker, Dan Mangan</p>
+<h2><a href="#1-load-and-get-to-know-data" id="1-load-and-get-to-know-data">1. Load and get to know data</a></h2>
+<pre><code>. use &quot;${datapath}acs2007.dta&quot;
+
+. describe  
+
+Contains data from /Users/doughty/Desktop/Boulder/Applied microeconometrics/Data/acs2007.dta
+  obs:     2,913,425                          
+ vars:            14                          18 Aug 2009 16:53
+ size:    90,316,175                          
+-----------------------------------------------------------------------------------------------------------
+              storage   display    value
+variable name   type    format     label      variable label
+-----------------------------------------------------------------------------------------------------------
+year            int     %8.0g      yearlbl    Census year
+datanum         byte    %8.0g                 Data set number
+serial          double  %10.0g                Household serial number
+hhwt            int     %8.0g                 Household weight
+gq              byte    %43.0g     gqlbl      Group quarters status
+perwt           int     %8.0g                 Person weight
+age             int     %36.0g     agelbl     Age
+sex             byte    %8.0g      sexlbl     Sex
+marst           byte    %23.0g     marstlbl   Marital status
+bpl             long    %27.0g     bpllbl     Birthplace [general version]
+yrsusa1         byte    %8.0g                 Years in the United States
+educrec         byte    %23.0g     educreclbl
+                                              Educational attainment recode
+empstat         byte    %18.0g     empstatlbl
+                                              Employment status [general version]
+incwage         long    %12.0g                Wage and salary income
+-----------------------------------------------------------------------------------------------------------
+Sorted by: 
+
+. compress
+  variable age was int now byte
+  variable bpl was long now int
+  variable serial was double now long
+  (20,393,975 bytes saved)
+
+</code></pre>
+<p>There are 2,913,425 observations and 14 variables.</p>
+<p>All variables are in a format suitable for analysis (i.e. nothing is a string that should be a number), even if the variables are not in the exact format I would have put them in (personally I usually have sex as either &ldquo;male&rdquo; or &ldquo;female&rdquo; and with values of 0 or 1, for example). It&rsquo;s not the most efficient storage type either, hence the compression.</p>
+<p>Note: I set up globals at the beginning of the file for storing data, accessing this file, and saving the markdown. I did this and overall settings (clear all, set more off) before the markdown starts because it is necessary for getting the markdown to work. Let me know if this is a problem for the code you want to see!</p>
+<pre><code>.         su
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+        year |  2,913,425        2007           0       2007       2007
+     datanum |  2,913,425           1           0          1          1
+      serial |  2,913,425    675543.4    395790.3          4    1360285
+        hhwt |  2,913,425    97.06509    66.08678          1       1466
+          gq |  2,913,425    1.001459    .0464898          1          5
+-------------+---------------------------------------------------------
+       perwt |  2,913,425    100.7405    70.77215          1       2032
+         age |  2,913,425    38.89746    23.06821          0         95
+         sex |  2,913,425    1.517572    .4996912          1          2
+       marst |  2,913,425     3.49533    2.326408          1          6
+         bpl |  2,913,425    67.13137    117.2534          1        950
+-------------+---------------------------------------------------------
+     yrsusa1 |  2,913,425    2.457155    8.571573          0         88
+     educrec |  2,913,425    6.232514    2.705586          0          9
+     empstat |  2,913,425    1.386688    1.106982          0          3
+     incwage |  2,913,425      231183    398774.6          0     999999
+
+	label list
+	hist incwage
+</code></pre>
+<p>I usually find the min/max useful for finding strange missing codes, and follow that up with more detailed examination if I find something suspicious. For example, incwage appears to have coded missing values as 999,999. I noticed this with the maximum and followed it up with a histogram to check (output not shown for parsimony)</p>
+<p>I also used the label list (output not shown for parsimony) to find codes for missing values: bpl uses 999 to indicate missingness, but it has no missingness in this dataset.</p>
+<p>According to the min/max values in the summarize output, age in the sample ranges from less than 1 to 95.</p>
+<pre><code>. replace incwage = . if incwage==999999
+(612,850 real changes made, 612,850 to missing)
+
+. replace bpl = . if bpl==999 //not necessary for this dataset, but seems like good practice
+(0 real changes made)
+
+</code></pre>
+<h2><a href="#2-limit-dataset" id="2-limit-dataset">2. Limit dataset</a></h2>
+<pre><code>. drop if age &lt; 18 | age &gt; 55
+(1,462,460 observations deleted)
+
+. keep if empstat==1
+(345,821 observations deleted)
+
+</code></pre>
+<h2><a href="#3-new-variables" id="3-new-variables">3. New variables</a></h2>
+<h3><a href="#female" id="female">Female</a></h3>
+<pre><code>. gen female = 0 if sex==1
+(526,422 missing values generated)
+
+. replace female = 1 if sex==2
+(526,422 real changes made)
+
+. 
+. lab def femlab 0 &quot;0=Male&quot; 1 &quot;1=Female&quot;
+
+. label values female femlab
+
+. 
+. tab sex female, mi //check
+
+           |        female
+       Sex |    0=Male   1=Female |     Total
+-----------+----------------------+----------
+      Male |   578,722          0 |   578,722 
+    Female |         0    526,422 |   526,422 
+-----------+----------------------+----------
+     Total |   578,722    526,422 | 1,105,144 
+
+</code></pre>
+<h3><a href="#immigrant" id="immigrant">Immigrant</a></h3>
+<pre><code>. gen immigrant = 0 if bpl &lt;= 120 
+(166,179 missing values generated)
+
+. replace immigrant = 1 if bpl &gt; 120 &amp; bpl &lt; .
+(166,179 real changes made)
+
+. 
+. lab def immlab 0 &quot;0=US born&quot; 1 &quot;1=immigrant&quot;
+
+. label values immigrant immlab 
+
+. 
+. bysort immigrant: su bpl //check
+
+-----------------------------------------------------------------------------------------------------------
+-&gt; immigrant = 0=US born
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+         bpl |    938,965    29.23069    16.16691          1        115
+
+-----------------------------------------------------------------------------------------------------------
+-&gt; immigrant = 1=immigrant
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+         bpl |    166,179    351.3841    148.0565        150        950
+
+
+</code></pre>
+<h3><a href="#years-of-education" id="years-of-education">Years of education</a></h3>
+<pre><code>. label list educreclbl
+educreclbl:
+           0 N/A  or No schooling
+           1 None or preschool
+           2 Grade 1, 2, 3, or 4
+           3 Grade 5, 6, 7, or 8
+           4 Grade 9
+           5 Grade 10
+           6 Grade 11
+           7 Grade 12
+           8 1 to 3 years of college
+           9 4+ years of college
+
+. recode educrec (0=0) (1=0) (2=2.5) (3=6.5) (4=9) (5=10) (6=11) (7=12) (8=14) (9=16), ///
+&gt;         gen(educyears)
+(1105144 differences between educrec and educyears)
+
+. lab var educyears &quot;Education in years&quot;
+
+. 
+. tab educyears educrec, mi //check
+
+ Education |                        Educational attainment recode
+  in years | None or p  Grade 1,   Grade 5,     Grade 9   Grade 10   Grade 11   Grade 12 |     Total
+-----------+-----------------------------------------------------------------------------+----------
+         0 |     3,729          0          0          0          0          0          0 |     3,729 
+       2.5 |         0      4,034          0          0          0          0          0 |     4,034 
+       6.5 |         0          0     22,240          0          0          0          0 |    22,240 
+         9 |         0          0          0     13,029          0          0          0 |    13,029 
+        10 |         0          0          0          0     15,277          0          0 |    15,277 
+        11 |         0          0          0          0          0     21,684          0 |    21,684 
+        12 |         0          0          0          0          0          0    320,379 |   320,379 
+        14 |         0          0          0          0          0          0          0 |   351,345 
+        16 |         0          0          0          0          0          0          0 |   353,427 
+-----------+-----------------------------------------------------------------------------+----------
+     Total |     3,729      4,034     22,240     13,029     15,277     21,684    320,379 | 1,105,144 
+
+
+           |      Educational
+ Education |   attainment recode
+  in years | 1 to 3 ye  4+ years  |     Total
+-----------+----------------------+----------
+         0 |         0          0 |     3,729 
+       2.5 |         0          0 |     4,034 
+       6.5 |         0          0 |    22,240 
+         9 |         0          0 |    13,029 
+        10 |         0          0 |    15,277 
+        11 |         0          0 |    21,684 
+        12 |         0          0 |   320,379 
+        14 |   351,345          0 |   351,345 
+        16 |         0    353,427 |   353,427 
+-----------+----------------------+----------
+     Total |   351,345    353,427 | 1,105,144 
+
+</code></pre>
+<h3><a href="#potential-experience" id="potential-experience">Potential experience</a></h3>
+<pre><code>. gen exper = age - educyears - 6
+
+. lab var exper &quot;Potential Experience&quot;
+
+. 
+. gen expersq = exper ^ 2
+
+. lab var expersq &quot;Potential Experience Squared&quot;
+
+</code></pre>
+<p>I&rsquo;m slightly worried about the people who have negative potential experience. If this were my data, I might replace the negatives with 0, but I&rsquo;m going to leave it as is.</p>
+<h3><a href="#log-of-income" id="log-of-income">Log of income</a></h3>
+<pre><code>. gen logearn = log(incwage)
+(61,932 missing values generated)
+
+. lab var logearn &quot;Log of Annual Earnings&quot;
+
+. 
+. tab incwage if logearn==., mi
+
+   Wage and |
+     salary |
+     income |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |     61,932      100.00      100.00
+------------+-----------------------------------
+      Total |     61,932      100.00
+
+</code></pre>
+<p>This creates missing values because of people with no earnings. You cannot take the natural log of 0 (it is undefined, as it approaches negative infinity), so those observations are missing.</p>
+<pre><code>. compress 
+  variable female was float now byte
+  variable immigrant was float now byte
+  (6,630,864 bytes saved)
+
+. save &quot;${datapath}acsrecoded.dta&quot;, replace
+file /Users/doughty/Desktop/Boulder/Applied microeconometrics/Data/acsrecoded.dta saved
+
+</code></pre>
+<h2><a href="#4-basic-analysis" id="4-basic-analysis">4. Basic analysis</a></h2>
+<p>(I&rsquo;m assuming it&rsquo;s fine to run these regressions unweighted even though there are weights given in the data)</p>
+<h3><a href="#regression-1" id="regression-1">Regression 1</a></h3>
+<pre><code>. reg logearn educyears exper expersq
+
+      Source |       SS           df       MS      Number of obs   = 1,043,212
+-------------+----------------------------------   F(3, 1043208)   &gt;  99999.00
+       Model |  285321.589         3  95107.1962   Prob &gt; F        =    0.0000
+    Residual |  847375.794 1,043,208  .812278849   R-squared       =    0.2519
+-------------+----------------------------------   Adj R-squared   =    0.2519
+       Total |  1132697.38 1,043,211  1.08577975   Root MSE        =    .90127
+
+------------------------------------------------------------------------------
+     logearn |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   educyears |   .1418801    .000401   353.82   0.000     .1410941     .142666
+       exper |   .1079658   .0003098   348.56   0.000     .1073587    .1085729
+     expersq |  -.0020902   8.39e-06  -249.10   0.000    -.0021067   -.0020738
+       _cons |   7.290563   .0059007  1235.54   0.000     7.278998    7.302128
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>Holding potential experience constant, a one-unit increase in years of education is associated with a 0.142-unit increase in log(earnings), or more helpfully, earnings should increase by (exp(.142) - 1)=15.2%. This is a statistically significant positive relationship between years of education and earnings (p &lt; 0.001).</p>
+<p>As earnings and potential experience do not have a linear relationship, we cannot simply express the change in earnings associated with a one-unit difference, because that difference changes over time. We can say that the instantaneous rate of change of earnings relative to potential experience at no experience, holding education constant, is (exp(0.108) - 1)=11.4% increase. This rate decreases with increasing potential experience (i.e. the return to experience diminishes over time). Both of these coefficients are statistically significant, indicating a quadratic relationship between potential experience and earnings that is likely not an artifact of sampling</p>
+<p>We can also conclude that the model predicts that a person with no potential experience and no education has an income of about $1466</p>
+<h3><a href="#adding-sex" id="adding-sex">Adding sex</a></h3>
+<pre><code>. reg logearn educyears exper expersq female
+
+      Source |       SS           df       MS      Number of obs   = 1,043,212
+-------------+----------------------------------   F(4, 1043207)   &gt;  99999.00
+       Model |  343249.667         4  85812.4169   Prob &gt; F        =    0.0000
+    Residual |  789447.715 1,043,207  .756750784   R-squared       =    0.3030
+-------------+----------------------------------   Adj R-squared   =    0.3030
+       Total |  1132697.38 1,043,211  1.08577975   Root MSE        =    .86991
+
+------------------------------------------------------------------------------
+     logearn |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   educyears |   .1514408   .0003886   389.72   0.000     .1506792    .1522024
+       exper |    .104552   .0002992   349.40   0.000     .1039655    .1051385
+     expersq |  -.0019921   8.11e-06  -245.73   0.000     -.002008   -.0019762
+      female |  -.4736823   .0017121  -276.67   0.000    -.4770379   -.4703267
+       _cons |   7.406006   .0057107  1296.86   0.000     7.394813    7.417199
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>Holding years of education and potential experience constant, a female is expected to earn (exp(-.474)) or 62.3% of a man&rsquo;s earnings. This is a statistically significant difference, and hopefully is outdated when it comes to my career :(</p>
+<h3><a href="#adding-immigration-status" id="adding-immigration-status">Adding immigration status</a></h3>
+<pre><code>. reg logearn educyears exper expersq immigrant
+
+      Source |       SS           df       MS      Number of obs   = 1,043,212
+-------------+----------------------------------   F(4, 1043207)   =  88006.90
+       Model |  285787.586         4  71446.8964   Prob &gt; F        =    0.0000
+    Residual |  846909.797 1,043,207  .811832931   R-squared       =    0.2523
+-------------+----------------------------------   Adj R-squared   =    0.2523
+       Total |  1132697.38 1,043,211  1.08577975   Root MSE        =    .90102
+
+------------------------------------------------------------------------------
+     logearn |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   educyears |   .1437936   .0004088   351.77   0.000     .1429924    .1445948
+       exper |   .1074614   .0003104   346.22   0.000     .1068531    .1080697
+     expersq |  -.0020758   8.41e-06  -246.82   0.000    -.0020923   -.0020593
+   immigrant |   .0605832   .0025287    23.96   0.000     .0556271    .0655393
+       _cons |   7.258131   .0060524  1199.21   0.000     7.246269    7.269994
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>Holding years of education and potential experience constant, an immigrant is expected to earn (exp(0.061)-1)=6.2% more than someone born in the U.S. This is a statistically significant difference.</p>
