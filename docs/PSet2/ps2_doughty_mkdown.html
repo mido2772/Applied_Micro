@@ -1,0 +1,382 @@
+<head>
+  <link rel="stylesheet" type="text/css" href="stmarkdown.css">
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
+</script>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function() {
+    htmlTableOfContents();
+} );                        
+
+function htmlTableOfContents( documentRef ) {
+    var documentRef = documentRef || document;
+    var toc = documentRef.getElementById("toc");
+//  Use headings inside <article> only:
+//  var headings = [].slice.call(documentRef.body.querySelectorAll('article h1, article h2, article h3, article h4, article h5, article h6'));
+    var headings = [].slice.call(documentRef.body.querySelectorAll('h1, h2, h3, h4, h5, h6'));
+    headings.forEach(function (heading, index) {
+        var ref = "toc" + index;
+        if ( heading.hasAttribute( "id" ) ) 
+            ref = heading.getAttribute( "id" );
+        else
+            heading.setAttribute( "id", ref );
+
+        var link = documentRef.createElement( "a" );
+        link.setAttribute( "href", "#"+ ref );
+        link.textContent = heading.textContent;
+
+        var div = documentRef.createElement( "div" );
+        div.setAttribute( "class", heading.tagName.toLowerCase() );
+        div.appendChild( link );
+        toc.appendChild( div );
+    });
+}
+
+
+try {
+    module.exports = htmlTableOfContents;
+} catch (e) {
+    // module.exports is not defined
+}
+</script>
+</head>
+<h1><a href="#pset-2" id="pset-2">PSet 2</a></h1>
+<p>Michelle Doughty<br />
+ECON 8848</p>
+<p>Began: 2020/01/25 Updated:</p>
+<p>Collaborators: Hannah Denker, Dan Mangan</p>
+<h2><a href="#getting-started" id="getting-started">Getting started</a></h2>
+<p><strong>Basics:</strong></p>
+<pre><code>. use &quot;${datapath}birthweight.dta&quot;, clear
+
+. describe
+
+Contains data from /Users/doughty/Desktop/Boulder/Applied microeconometrics/Data/birthweight.dta
+  obs:         1,388                          
+ vars:            14                          6 Oct 2008 13:39
+ size:        77,728                          
+-----------------------------------------------------------------------------------------------------------
+              storage   display    value
+variable name   type    format     label      variable label
+-----------------------------------------------------------------------------------------------------------
+faminc          float   %9.0g                 1988 family income, $1000s
+cigtax          float   %9.0g                 cig. tax in home state, 1988
+cigprice        float   %9.0g                 cig. price in home state, 1988
+bwght           float   %9.0g                 birth weight, ounces
+fatheduc        float   %9.0g                 father's yrs of educ
+motheduc        float   %9.0g                 mother's yrs of educ
+parity          float   %9.0g                 birth order of child
+male            float   %9.0g                 =1 if male child
+white           float   %9.0g                 =1 if white
+cigs            float   %9.0g                 cigs smked per day while preg
+lbwght          float   %9.0g                 log of bwght
+bwghtlbs        float   %9.0g                 birth weight, pounds
+packs           float   %9.0g                 packs smked per day while preg
+lfaminc         float   %9.0g                 log(faminc)
+-----------------------------------------------------------------------------------------------------------
+Sorted by: 
+
+. mdesc 
+
+    Variable    |     Missing          Total     Percent Missing
+----------------+-----------------------------------------------
+         faminc |           0          1,388           0.00
+         cigtax |           0          1,388           0.00
+       cigprice |           0          1,388           0.00
+          bwght |           0          1,388           0.00
+       fatheduc |         196          1,388          14.12
+       motheduc |           1          1,388           0.07
+         parity |           0          1,388           0.00
+           male |           0          1,388           0.00
+          white |           0          1,388           0.00
+           cigs |           0          1,388           0.00
+         lbwght |           0          1,388           0.00
+       bwghtlbs |           0          1,388           0.00
+          packs |           0          1,388           0.00
+        lfaminc |           0          1,388           0.00
+----------------+-----------------------------------------------
+
+. su
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+      faminc |      1,388    29.02666    18.73928         .5         65
+      cigtax |      1,388    19.55295    7.795598          2         38
+    cigprice |      1,388     130.559    10.24448      103.8      152.5
+       bwght |      1,388    118.6996    20.35396         23        271
+    fatheduc |      1,192    13.18624    2.745985          1         18
+-------------+---------------------------------------------------------
+    motheduc |      1,387    12.93583    2.376728          2         18
+      parity |      1,388    1.632565    .8940273          1          6
+        male |      1,388    .5208934    .4997433          0          1
+       white |      1,388    .7845821    .4112601          0          1
+        cigs |      1,388    2.087176    5.972688          0         50
+-------------+---------------------------------------------------------
+      lbwght |      1,388    4.760031    .1906622   3.135494   5.602119
+    bwghtlbs |      1,388    7.418723    1.272123     1.4375    16.9375
+       packs |      1,388    .1043588    .2986344          0        2.5
+     lfaminc |      1,388    3.071271    .9180645  -.6931472   4.174387
+
+</code></pre>
+<p>The values look mostly reasonable. The missingness of father&rsquo;s years of education is going to be a problem if we use that var. I&rsquo;m not sure what&rsquo;s happening with the family income maxing out $65,000, with that income as very common. Does faminc==65 just mean 65+?</p>
+<p><strong>Global:</strong></p>
+<pre><code>. glob keyvars &quot;bwght cigs faminc fatheduc motheduc parity male white&quot;
+
+</code></pre>
+<p><strong>Smoker var:</strong></p>
+<pre><code>. cap drop smoker 
+
+. generate smoker = cigs &gt; 0 
+
+. 
+. lab def smoklab 0 &quot;Non-smokers&quot; 1 &quot;Smoked while pregnant&quot;
+
+. lab values smoker smoklab 
+
+. lab var smoker &quot;=1 if mother smoked while pregnant&quot;
+
+</code></pre>
+<p><strong>Median income var:</strong></p>
+<pre><code>. su faminc, d
+
+                 1988 family income, $1000s
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%           .5             .5
+ 5%          3.5             .5
+10%          6.5             .5       Obs               1,388
+25%         14.5             .5       Sum of Wgt.       1,388
+
+50%         27.5                      Mean           29.02666
+                        Largest       Std. Dev.      18.73928
+75%         37.5             65
+90%           65             65       Variance       351.1608
+95%           65             65       Skewness       .6176205
+99%           65             65       Kurtosis       2.473396
+
+. cap drop highinc 
+
+. generate highinc = faminc &gt;= `r(p50)'
+
+. 
+. lab def highinclab 0 &quot;0=family income below median&quot; 1 &quot;1=family income &gt;= median&quot;
+
+. lab values highinc highinclab 
+
+. lab var highinc &quot;=1 if family income &gt;= median&quot;
+
+</code></pre>
+<h2><a href="#descriptives" id="descriptives">Descriptives</a></h2>
+<p><strong>Table 1:</strong></p>
+<pre><code>. tabstat ${keyvars}, statistics(mean p50 sd count) columns(statistics)
+
+    variable |      mean       p50        sd         N
+-------------+----------------------------------------
+       bwght |  118.6996       120  20.35396      1388
+        cigs |  2.087176         0  5.972688      1388
+      faminc |  29.02666      27.5  18.73928      1388
+    fatheduc |  13.18624        12  2.745985      1192
+    motheduc |  12.93583        12  2.376728      1387
+      parity |  1.632565         1  .8940273      1388
+        male |  .5208934         1  .4997433      1388
+       white |  .7845821         1  .4112601      1388
+------------------------------------------------------
+
+</code></pre>
+<p>As mentioned previously, father&rsquo;s education is missing for almost 200 observations (about 14%). This missingness is systematic, as it is is higher among lower-income families, non-White families and families where the mother smokes. It could indicate single mothers, but I wouldn&rsquo;t bet on that without additional information. One value of mother education is missing, but that&rsquo;s unlikely to affect results if dropped.</p>
+<p>The sample is about 78% White, which is fairly close to the U.S. overall population in 1988 (I&rsquo;m assuming that&rsquo;s the year of the sample based on the variable labels). Both fathers and mothers have a median education of 12 years (or a HS diploma), though based on the mean those are both right-skewed. The average birthweight is 120 ounces, though I don&rsquo;t know enough about newborns to interpret that meaningfully. The majority of pregnant women are non-smokers, but the average number of cigarettes smoked per day is 2, indicating that some pregnant women could be smoking a great deal. About half the babies are male.</p>
+<p><strong>Table 2:</strong></p>
+<pre><code>. bysort smoker: tabstat ${keyvars}, statistics(mean p50 sd count) columns(statistics)
+
+-----------------------------------------------------------------------------------------------------------
+-&gt; smoker = Non-smokers
+
+    variable |      mean       p50        sd         N
+-------------+----------------------------------------
+       bwght |  120.0612       121  20.26849      1176
+        cigs |         0         0         0      1176
+      faminc |  30.48852      27.5  18.95627      1176
+    fatheduc |  13.38894        13  2.768939      1031
+    motheduc |  13.17021        12  2.396398      1175
+      parity |  1.616497         1  .8953972      1176
+        male |  .5297619         1  .4993258      1176
+       white |  .7857143         1  .4105005      1176
+------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------------------
+-&gt; smoker = Smoked while pregnant
+
+    variable |      mean       p50        sd         N
+-------------+----------------------------------------
+       bwght |  111.1462       112  19.18141       212
+        cigs |  13.66509        10  8.690907       212
+      faminc |  20.91745      18.5   15.1425       212
+    fatheduc |   11.8882        12  2.193723       161
+    motheduc |  11.63679        12  1.775335       212
+      parity |  1.721698         1  .8831766       212
+        male |  .4716981         0  .5003799       212
+       white |  .7783019         1  .4163722       212
+------------------------------------------------------
+
+</code></pre>
+<p>Women who smoke while pregnant are more likely to have lower levels of education and partners with lower levels of education. Women who do not smoke while pregnant have on average a much higher family income and are slightly more likely to be White. The babies of non-smoking women do tend to weight about 9 oz more on average. However; we cannot conclude that this is specifically due to the smoking. Richer and more educated parents are less likely to smoke and perhaps better able to provide the health supports necessary to give birth to a higher-weight baby. The correlation between smoking and baby weight could be a matter of some other variable correlated with both smoking and with baby weight.</p>
+<p><strong>Table 3:</strong></p>
+<pre><code>. tab smoker highinc, row nofreq
+
+                      |  =1 if family income
+  =1 if mother smoked |       &gt;= median
+       while pregnant | 0=family   1=family  |     Total
+----------------------+----------------------+----------
+          Non-smokers |     45.32      54.68 |    100.00 
+Smoked while pregnant |     67.92      32.08 |    100.00 
+----------------------+----------------------+----------
+                Total |     48.78      51.22 |    100.00 
+
+</code></pre>
+<p>As explored in the prior table, income and smoking seem to be negatively correlated. Mothers who do not smoke appear much more likely to be high income than mothers who do not smoke.</p>
+<h2><a href="#graphs" id="graphs">Graphs</a></h2>
+<p><strong>Cigarettes Histogram 1</strong></p>
+<pre><code>. hist cigs, freq ///
+&gt;         title(&quot;Cigarette Smoking among Pregnant Women&quot;) ///
+&gt;         xtitle(&quot;Cigarettes Smoked Per Day While Pregnant&quot;) ///
+&gt;         start(0) width(2) ///
+&gt;         lcolor(edkblue) fcolor(emidblue) ///
+&gt;         ylab(0(250)1250, angle(horizontal))
+
+</code></pre>
+<img src="cigs_hist.svg" height="400" >
+<p>This histogram is difficult to interpret, because the scale is skewed due to the large number of non-smokers. (Overall, lots of pregnant women not smoking is a good thing, even though it is causing some problems with this graph.) Over 1000 of the about 1400 pregnant women in the data do not smoke. It appears that there are small spikes at multiples of 10 (i.e. 10, 20, 30, and 40 cigarettes per day). This may be a result of cigarettes coming in packs of 20 (the spike at  20 is most likely people who smoke exactly a pack a day) or, if the data are self-reported, a result of people approximating their own cigarette usage.</p>
+<p><strong>Cigarettes Histogram 2</strong></p>
+<pre><code>. hist cigs if smoker==1, freq ///
+&gt;         title(&quot;Cigarette Smoking among Pregnant Smokers&quot;) ///
+&gt;         xtitle(&quot;Cigarettes Smoked Per Day While Pregnant&quot;) ///
+&gt;         lcolor(edkblue) fcolor(emidblue) ///
+&gt;         start(0) width(2) 
+
+</code></pre>
+<img src="cigs_hist2.svg" height="400" >
+<p><strong>Parity Histogram</strong></p>
+<pre><code>. hist parity, freq ///
+&gt;         title(&quot;Birth Order of Children&quot;) ///
+&gt;         xtitle(&quot;Birth Order&quot;) ///
+&gt;         lcolor(erose*1.2) fcolor(erose) ///
+&gt;         start(1) width(1) 
+
+</code></pre>
+<img src="parity_hist.svg" height="400" >
+<p><strong>Education Histogram</strong></p>
+<pre><code>. hist motheduc, by(smoker) ///
+&gt;         start(0) width(1) ///
+&gt;         lcolor(eltgreen*1.2) fcolor(eltgreen) ///
+&gt;         xtitle(&quot;Mother's Years of Education&quot;) 
+
+</code></pre>
+<img src="educbysmoke.svg" height="400" >
+<p>For both distributions, the modal years of education is 12 (high school diploma). Non-smokers do appear to have more years of education, with a larger amount of the population distributed above 12 years (and another small spike at 16 years, or a college degree). Mothers who smoked were more likely to stop school before high school graduation.</p>
+<p><strong>Scatterplot: birthweight by cigarettes</strong></p>
+<pre><code>. twoway (scatter bwght cigs) (lfit bwght cigs), ///
+&gt;         xtitle(&quot;Cigarettes smoked per day while pregnant&quot;) ///
+&gt;         ytitle(&quot;Birthweight (ounces)&quot;) ///
+&gt;         title(&quot;Birthweight and Mother's Smoking&quot;) ///
+&gt;         legend(off)
+
+</code></pre>
+<img src="bwghtcigs.svg" height="400" >
+<p>It appears that there is a slight negative relationship between cigarettes smoked and birthweight, based on the slope of the regression line.</p>
+<h2><a href="#regression-tables" id="regression-tables">Regression tables</a></h2>
+<p>Note that for all regressions, I have limited the sample to observations with mother&rsquo;s education to stay consistent.</p>
+<pre><code>. reg bwght cigs if motheduc &lt; ., vce(robust)
+
+Linear regression                               Number of obs     =      1,387
+                                                F(1, 1385)        =      34.36
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.0228
+                                                Root MSE          =     20.133
+
+------------------------------------------------------------------------------
+             |               Robust
+       bwght |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+        cigs |  -.5143113   .0877467    -5.86   0.000    -.6864421   -.3421805
+       _cons |   119.7822   .5749201   208.35   0.000     118.6544      120.91
+------------------------------------------------------------------------------
+
+. est store M1 
+
+. reg bwght cigs faminc if motheduc &lt; ., vce(robust) 
+
+Linear regression                               Number of obs     =      1,387
+                                                F(2, 1384)        =      22.08
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.0298
+                                                Root MSE          =     20.068
+
+------------------------------------------------------------------------------
+             |               Robust
+       bwght |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+        cigs |  -.4641368   .0887812    -5.23   0.000    -.6382972   -.2899765
+      faminc |    .092252   .0286131     3.22   0.001     .0361223    .1483818
+       _cons |   116.9982    1.03889   112.62   0.000     114.9603    119.0362
+------------------------------------------------------------------------------
+
+. est store M2 
+
+. reg bwght cigs faminc parity male white motheduc, vce(robust)
+
+Linear regression                               Number of obs     =      1,387
+                                                F(6, 1380)        =      13.68
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.0526
+                                                Root MSE          =     19.859
+
+------------------------------------------------------------------------------
+             |               Robust
+       bwght |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+        cigs |  -.4864302   .0915172    -5.32   0.000    -.6659582   -.3069023
+      faminc |   .0591903   .0323814     1.83   0.068    -.0043319    .1227125
+      parity |   1.805121   .5998189     3.01   0.003     .6284653    2.981776
+        male |   3.176597   1.064197     2.98   0.003     1.088979    5.264215
+       white |   5.678583    1.43134     3.97   0.000     2.870746     8.48642
+    motheduc |   .0793044   .2372861     0.33   0.738     -.386176    .5447849
+       _cons |    107.921   3.397986    31.76   0.000     101.2552    114.5868
+------------------------------------------------------------------------------
+
+. est store M3 
+
+. 
+. estout M1 M2 M3, cells(b(fmt(%7.3f) star) se(fmt(%7.3f) par)) ///
+&gt;         stats(r2 N, fmt(3 0)) ///
+&gt;         label legend varlabels(cigs &quot;Cigarettes&quot; faminc &quot;Family income&quot; parity &quot;Parity&quot; male &quot;Male&quot; ///
+&gt;                 white &quot;White&quot; motheduc &quot;Mother's education&quot; _cons &quot;Constant&quot;)
+
+--------------------------------------------------------------------
+                               M1              M2              M3   
+                             b/se            b/se            b/se   
+--------------------------------------------------------------------
+Cigarettes                 -0.514***       -0.464***       -0.486***
+                          (0.088)         (0.089)         (0.092)   
+Family income                               0.092**         0.059   
+                                          (0.029)         (0.032)   
+Parity                                                      1.805** 
+                                                          (0.600)   
+Male                                                        3.177** 
+                                                          (1.064)   
+White                                                       5.679***
+                                                          (1.431)   
+Mother's education                                          0.079   
+                                                          (0.237)   
+Constant                  119.782***      116.998***      107.921***
+                          (0.575)         (1.039)         (3.398)   
+--------------------------------------------------------------------
+r2                          0.023           0.030           0.053   
+N                            1387            1387            1387   
+--------------------------------------------------------------------
+* p&lt;0.05, ** p&lt;0.01, *** p&lt;0.001
+
+</code></pre>
+<p>There are many strong predictors of birthweight, including race, baby gender, and birth order (White babies, male babies, and higher-parity babies tend to be heavier). Neither family income nor mother&rsquo;s education are significant predictors after controlling for race, gender, birth order, and cigarettes smoked. Even after adding these other controls, cigarettes smoked remains a significant predictor of birthweight: Every additional cigarette smoked a day was associated with a decrease in birthweight of about 0.5 ounces. This provides strong evidence that the association between cigarettes and birthweight is not a matter of family income or mother&rsquo;s education. However, it is still insufficient to establish that cigarettes are causing lower birthweight, because there are many other omitted variables. For example, attitudes about health could be a factor: women who do not know nor care much about ideas of health could be more likely to smoke <em>and</em> less likely to do other activities (taking pre-natal vitamins? Not drinking? I don&rsquo;t know a lot about babies) that could correlate with birthweight.</p>
