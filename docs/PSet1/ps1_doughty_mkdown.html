@@ -46,10 +46,11 @@ try {
 <h1><a href="#pset-1" id="pset-1">PSet 1</a></h1>
 <p>Michelle Doughty<br />
 ECON 8848</p>
-<p>Began: 2020/01/18<br />
-Updated: 2020/01/27</p>
-<p>Collaborators: Hannah Denker, Dan Mangan</p>
+<p>Began: 18 Jan 2021<br />
+Updated: 27 Jan 2021</p>
+<p>Collaborators: Hannah Denker, Dan Mangan, Rimjhim Saxena</p>
 <h2><a href="#1-load-and-get-to-know-data" id="1-load-and-get-to-know-data">1. Load and get to know data</a></h2>
+<p>Note: I set up globals and overall settings at the beginning of the file, as part of setting up the markdown, so it is not shown. Let me know if this is a problem for the code you want to see!</p>
 <pre><code>. use &quot;${datapath}acs2007.dta&quot;
 
 . describe  
@@ -88,9 +89,8 @@ Sorted by:
   (20,393,975 bytes saved)
 
 </code></pre>
-<p>There are 2,913,425 observations and 14 variables.</p>
+<p>There are    2,913,425 observations and 14 variables.</p>
 <p>All variables are in a format suitable for analysis (i.e. nothing is a string that should be a number), even if the variables are not in the exact format I would have put them in (personally I usually have sex as either &ldquo;male&rdquo; or &ldquo;female&rdquo; and with values of 0 or 1, for example). It&rsquo;s not the most efficient storage type either, hence the compression.</p>
-<p>Note: I set up globals at the beginning of the file for storing data, accessing this file, and saving the markdown. I did this and overall settings (clear all, set more off) before the markdown starts because it is necessary for getting the markdown to work. Let me know if this is a problem for the code you want to see!</p>
 <pre><code>.         su
 
     Variable |        Obs        Mean    Std. Dev.       Min        Max
@@ -115,7 +115,7 @@ Sorted by:
 	label list
 	hist incwage
 </code></pre>
-<p>I usually find the min/max useful for finding strange missing codes, and follow that up with more detailed examination if I find something suspicious. For example, incwage appears to have coded missing values as 999,999. I noticed this with the maximum and followed it up with a histogram to check (output not shown for parsimony)</p>
+<p>I usually find the min/max useful for finding strange missing codes, and follow that up with more detailed examination if I find something suspicious. For example, I was suspicious of the maximum value of incwage and followed that up with a histogram (not shown for parsimony) to confirm that 999,999 was a missing code.</p>
 <p>I also used the label list (output not shown for parsimony) to find codes for missing values: bpl uses 999 to indicate missingness, but it has no missingness in this dataset.</p>
 <p>According to the min/max values in the summarize output, age in the sample ranges from less than 1 to 95.</p>
 <pre><code>. replace incwage = . if incwage==999999
