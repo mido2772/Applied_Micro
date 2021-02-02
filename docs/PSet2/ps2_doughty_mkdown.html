@@ -46,22 +46,24 @@ try {
 <h1><a href="#pset-2" id="pset-2">PSet 2</a></h1>
 <p>Michelle Doughty<br />
 ECON 8848</p>
-<p>Began: 2020/01/25 Updated:</p>
+<p>Began: 25 Jan 2020<br />
+Updated: 3 Feb 2020</p>
 <p>Collaborators: Hannah Denker, Dan Mangan</p>
 <h2><a href="#getting-started" id="getting-started">Getting started</a></h2>
 <p><strong>Basics:</strong></p>
 <pre><code>. use &quot;${datapath}birthweight.dta&quot;, clear
 
-. describe
+. describe 
 
-Contains data from /Users/doughty/Desktop/Boulder/Applied microeconometrics/Data/birthweight.dta
+Contains data from /Users/doughty/Desktop/Boulder/Applied microeconometrics/Data/birthwe
+&gt; ight.dta
   obs:         1,388                          
  vars:            14                          6 Oct 2008 13:39
  size:        77,728                          
------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
               storage   display    value
 variable name   type    format     label      variable label
------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 faminc          float   %9.0g                 1988 family income, $1000s
 cigtax          float   %9.0g                 cig. tax in home state, 1988
 cigprice        float   %9.0g                 cig. price in home state, 1988
@@ -76,28 +78,8 @@ lbwght          float   %9.0g                 log of bwght
 bwghtlbs        float   %9.0g                 birth weight, pounds
 packs           float   %9.0g                 packs smked per day while preg
 lfaminc         float   %9.0g                 log(faminc)
------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 Sorted by: 
-
-. mdesc 
-
-    Variable    |     Missing          Total     Percent Missing
-----------------+-----------------------------------------------
-         faminc |           0          1,388           0.00
-         cigtax |           0          1,388           0.00
-       cigprice |           0          1,388           0.00
-          bwght |           0          1,388           0.00
-       fatheduc |         196          1,388          14.12
-       motheduc |           1          1,388           0.07
-         parity |           0          1,388           0.00
-           male |           0          1,388           0.00
-          white |           0          1,388           0.00
-           cigs |           0          1,388           0.00
-         lbwght |           0          1,388           0.00
-       bwghtlbs |           0          1,388           0.00
-          packs |           0          1,388           0.00
-        lfaminc |           0          1,388           0.00
-----------------+-----------------------------------------------
 
 . su
 
@@ -136,8 +118,11 @@ Sorted by:
 
 . lab values smoker smoklab 
 
-. lab var smoker &quot;=1 if mother smoked while pregnant&quot;
+. lab var smoker &quot;Whether a mother smoked while pregnant&quot;
 
+.         //normally I have a much more systematic and less formal system for labelling 
+&gt; variables 
+.         //but this does save me time on the graph labelling below
 </code></pre>
 <p><strong>Median income var:</strong></p>
 <pre><code>. su faminc, d
@@ -186,12 +171,12 @@ Sorted by:
 ------------------------------------------------------
 
 </code></pre>
-<p>As mentioned previously, father&rsquo;s education is missing for almost 200 observations (about 14%). This missingness is systematic, as it is is higher among lower-income families, non-White families and families where the mother smokes. It could indicate single mothers, but I wouldn&rsquo;t bet on that without additional information. One value of mother education is missing, but that&rsquo;s unlikely to affect results if dropped.</p>
-<p>The sample is about 78% White, which is fairly close to the U.S. overall population in 1988 (I&rsquo;m assuming that&rsquo;s the year of the sample based on the variable labels). Both fathers and mothers have a median education of 12 years (or a HS diploma), though based on the mean those are both right-skewed. The average birthweight is 120 ounces, though I don&rsquo;t know enough about newborns to interpret that meaningfully. The majority of pregnant women are non-smokers, but the average number of cigarettes smoked per day is 2, indicating that some pregnant women could be smoking a great deal. About half the babies are male.</p>
+<p>As mentioned previously, father&rsquo;s education is missing for almost 200 observations (about 14%). This missingness is systematic, as it is is higher among lower-income families, non-White families and families where the mother smokes. It could indicate single mothers, but I would need additional information to say for sure. One value of mother education is missing, but that&rsquo;s unlikely to affect results if dropped.</p>
+<p>The sample is about 78% White, which is fairly close to the U.S. overall population in 1988 (the presumed year of the sample based on variable labels). Both fathers and mothers have a median education of 12 years, though based on the mean those are both right-skewed. The average birthweight is 120 ounces, though I don&rsquo;t know enough about newborns to interpret that meaningfully. The majority of pregnant women are non-smokers, but the average number of cigarettes smoked per day is 2, indicating that some pregnant women could be smoking a great deal.</p>
 <p><strong>Table 2:</strong></p>
 <pre><code>. bysort smoker: tabstat ${keyvars}, statistics(mean p50 sd count) columns(statistics)
 
------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 -&gt; smoker = Non-smokers
 
     variable |      mean       p50        sd         N
@@ -206,7 +191,7 @@ Sorted by:
        white |  .7857143         1  .4105005      1176
 ------------------------------------------------------
 
------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 -&gt; smoker = Smoked while pregnant
 
     variable |      mean       p50        sd         N
@@ -222,13 +207,13 @@ Sorted by:
 ------------------------------------------------------
 
 </code></pre>
-<p>Women who smoke while pregnant are more likely to have lower levels of education and partners with lower levels of education. Women who do not smoke while pregnant have on average a much higher family income and are slightly more likely to be White. The babies of non-smoking women do tend to weight about 9 oz more on average. However; we cannot conclude that this is specifically due to the smoking. Richer and more educated parents are less likely to smoke and perhaps better able to provide the health supports necessary to give birth to a higher-weight baby. The correlation between smoking and baby weight could be a matter of some other variable correlated with both smoking and with baby weight.</p>
+<p>Women who smoke while pregnant are more likely to have lower levels of education and partners with lower levels of education. Non-smoking mothers have on average a much higher family income and are slightly more likely to be White. The babies of non-smoking women do tend to weight about 9 oz more on average. However, we cannot conclude that this is specifically due to the smoking. Richer and more educated parents are less likely to smoke and perhaps better able to provide the health supports necessary to give birth to a higher-weight baby. The correlation between smoking and baby weight could be a matter of some other variable correlated with both smoking and with baby weight.</p>
 <p><strong>Table 3:</strong></p>
 <pre><code>. tab smoker highinc, row nofreq
 
                       |  =1 if family income
-  =1 if mother smoked |       &gt;= median
-       while pregnant | 0=family   1=family  |     Total
+     Whether a mother |       &gt;= median
+smoked while pregnant | 0=family   1=family  |     Total
 ----------------------+----------------------+----------
           Non-smokers |     45.32      54.68 |    100.00 
 Smoked while pregnant |     67.92      32.08 |    100.00 
@@ -248,7 +233,7 @@ Smoked while pregnant |     67.92      32.08 |    100.00
 
 </code></pre>
 <img src="cigs_hist.svg" height="400" >
-<p>This histogram is difficult to interpret, because the scale is skewed due to the large number of non-smokers. (Overall, lots of pregnant women not smoking is a good thing, even though it is causing some problems with this graph.) Over 1000 of the about 1400 pregnant women in the data do not smoke. It appears that there are small spikes at multiples of 10 (i.e. 10, 20, 30, and 40 cigarettes per day). This may be a result of cigarettes coming in packs of 20 (the spike at  20 is most likely people who smoke exactly a pack a day) or, if the data are self-reported, a result of people approximating their own cigarette usage.</p>
+<p>This histogram is difficult to interpret, because the scale is skewed due to the large number of non-smokers. (I feel I should point out that lots of pregnant women not smoking is a <em>good</em> thing, even though it is causing some problems with this graph.) Over 1000 of the about 1400 pregnant women in the data do not smoke. It appears that there are small spikes at multiples of 10 (i.e. 10, 20, 30, and 40 cigarettes per day). This may be a result of cigarettes coming in packs of 20 or, if the data are self-reported, a result of people approximating their own cigarette usage.</p>
 <p><strong>Cigarettes Histogram 2</strong></p>
 <pre><code>. hist cigs if smoker==1, freq ///
 &gt;         title(&quot;Cigarette Smoking among Pregnant Smokers&quot;) ///
@@ -271,11 +256,12 @@ Smoked while pregnant |     67.92      32.08 |    100.00
 <pre><code>. hist motheduc, by(smoker) ///
 &gt;         start(0) width(1) ///
 &gt;         lcolor(eltgreen*1.2) fcolor(eltgreen) ///
-&gt;         xtitle(&quot;Mother's Years of Education&quot;) 
+&gt;         xtitle(&quot;Mother's Years of Education&quot;) ///
+&gt;         xsize(10) ysize(5)
 
 </code></pre>
 <img src="educbysmoke.svg" height="400" >
-<p>For both distributions, the modal years of education is 12 (high school diploma). Non-smokers do appear to have more years of education, with a larger amount of the population distributed above 12 years (and another small spike at 16 years, or a college degree). Mothers who smoked were more likely to stop school before high school graduation.</p>
+<p>For both distributions, the modal years of education is 12 (high school diploma). Non-smokers do appear to be more frequently highly educated, with a larger amount of the population distributed above 12 years (and another small spike at 16 years, or a college degree). Mothers who smoked were more likely to stop school before high school graduation.</p>
 <p><strong>Scatterplot: birthweight by cigarettes</strong></p>
 <pre><code>. twoway (scatter bwght cigs) (lfit bwght cigs), ///
 &gt;         xtitle(&quot;Cigarettes smoked per day while pregnant&quot;) ///
@@ -288,7 +274,7 @@ Smoked while pregnant |     67.92      32.08 |    100.00
 <p>It appears that there is a slight negative relationship between cigarettes smoked and birthweight, based on the slope of the regression line.</p>
 <h2><a href="#regression-tables" id="regression-tables">Regression tables</a></h2>
 <p>Note that for all regressions, I have limited the sample to observations with mother&rsquo;s education to stay consistent.</p>
-<pre><code>. reg bwght cigs if motheduc &lt; ., vce(robust)
+<pre><code>. reg bwght cigs if motheduc &lt; ., robust
 
 Linear regression                               Number of obs     =      1,387
                                                 F(1, 1385)        =      34.36
@@ -306,7 +292,7 @@ Linear regression                               Number of obs     =      1,387
 
 . est store M1 
 
-. reg bwght cigs faminc if motheduc &lt; ., vce(robust) 
+. reg bwght cigs faminc if motheduc &lt; ., robust
 
 Linear regression                               Number of obs     =      1,387
                                                 F(2, 1384)        =      22.08
@@ -325,7 +311,7 @@ Linear regression                               Number of obs     =      1,387
 
 . est store M2 
 
-. reg bwght cigs faminc parity male white motheduc, vce(robust)
+. reg bwght cigs faminc parity male white motheduc, robust
 
 Linear regression                               Number of obs     =      1,387
                                                 F(6, 1380)        =      13.68
@@ -351,7 +337,8 @@ Linear regression                               Number of obs     =      1,387
 . 
 . estout M1 M2 M3, cells(b(fmt(%7.3f) star) se(fmt(%7.3f) par)) ///
 &gt;         stats(r2 N, fmt(3 0)) ///
-&gt;         label legend varlabels(cigs &quot;Cigarettes&quot; faminc &quot;Family income&quot; parity &quot;Parity&quot; male &quot;Male&quot; ///
+&gt;         label legend varlabels(cigs &quot;Cigarettes&quot; faminc &quot;Family income&quot; parity &quot;Parity
+&gt; &quot; male &quot;Male&quot; ///
 &gt;                 white &quot;White&quot; motheduc &quot;Mother's education&quot; _cons &quot;Constant&quot;)
 
 --------------------------------------------------------------------
@@ -379,4 +366,4 @@ N                            1387            1387            1387
 * p&lt;0.05, ** p&lt;0.01, *** p&lt;0.001
 
 </code></pre>
-<p>There are many strong predictors of birthweight, including race, baby gender, and birth order (White babies, male babies, and higher-parity babies tend to be heavier). Neither family income nor mother&rsquo;s education are significant predictors after controlling for race, gender, birth order, and cigarettes smoked. Even after adding these other controls, cigarettes smoked remains a significant predictor of birthweight: Every additional cigarette smoked a day was associated with a decrease in birthweight of about 0.5 ounces. This provides strong evidence that the association between cigarettes and birthweight is not a matter of family income or mother&rsquo;s education. However, it is still insufficient to establish that cigarettes are causing lower birthweight, because there are many other omitted variables. For example, attitudes about health could be a factor: women who do not know nor care much about ideas of health could be more likely to smoke <em>and</em> less likely to do other activities (taking pre-natal vitamins? Not drinking? I don&rsquo;t know a lot about babies) that could correlate with birthweight.</p>
+<p>There are many strong predictors of birthweight, including race, baby gender, and birth order (White babies, male babies, and higher-parity babies tend to be heavier). Neither family income nor mother&rsquo;s education are significant predictors after controlling for race, gender, birth order, and cigarettes smoked. Even after adding these other controls, cigarettes smoked remains a significant predictor of birthweight: Every additional cigarette smoked a day was associated with a decrease in birthweight of about 0.5 ounces. This provides strong evidence that the association between cigarettes and birthweight is not a matter of family income or mother&rsquo;s education. However, it is still insufficient to establish that cigarettes are causing lower birthweight, because there are many other omitted variables. For example, attitudes about health could be a factor: Women who do not know nor care much about ideas of health could be more likely to smoke <em>and</em> less likely to do other activities (taking pre-natal vitamins? Not drinking? I don&rsquo;t know a lot about babies) that could correlate with birthweight.</p>
