@@ -55,15 +55,15 @@ Updated: 3 Feb 2020</p>
 
 . describe 
 
-Contains data from /Users/doughty/Desktop/Boulder/Applied microeconometrics/Data/birthwe
-&gt; ight.dta
+Contains data from /Users/doughty/Desktop/Boulder/Applied microeconometrics/Data/birth
+&gt; weight.dta
   obs:         1,388                          
  vars:            14                          6 Oct 2008 13:39
  size:        77,728                          
-----------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
               storage   display    value
 variable name   type    format     label      variable label
-----------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
 faminc          float   %9.0g                 1988 family income, $1000s
 cigtax          float   %9.0g                 cig. tax in home state, 1988
 cigprice        float   %9.0g                 cig. price in home state, 1988
@@ -78,7 +78,7 @@ lbwght          float   %9.0g                 log of bwght
 bwghtlbs        float   %9.0g                 birth weight, pounds
 packs           float   %9.0g                 packs smked per day while preg
 lfaminc         float   %9.0g                 log(faminc)
-----------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
 Sorted by: 
 
 . su
@@ -120,8 +120,8 @@ Sorted by:
 
 . lab var smoker &quot;Whether a mother smoked while pregnant&quot;
 
-.         //normally I have a much more systematic and less formal system for labelling 
-&gt; variables 
+.         //normally I have a much more systematic and less formal system for labellin
+&gt; g variables 
 .         //but this does save me time on the graph labelling below
 </code></pre>
 <p><strong>Median income var:</strong></p>
@@ -176,7 +176,7 @@ Sorted by:
 <p><strong>Table 2:</strong></p>
 <pre><code>. bysort smoker: tabstat ${keyvars}, statistics(mean p50 sd count) columns(statistics)
 
-----------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
 -&gt; smoker = Non-smokers
 
     variable |      mean       p50        sd         N
@@ -191,7 +191,7 @@ Sorted by:
        white |  .7857143         1  .4105005      1176
 ------------------------------------------------------
 
-----------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
 -&gt; smoker = Smoked while pregnant
 
     variable |      mean       p50        sd         N
@@ -337,8 +337,8 @@ Linear regression                               Number of obs     =      1,387
 . 
 . estout M1 M2 M3, cells(b(fmt(%7.3f) star) se(fmt(%7.3f) par)) ///
 &gt;         stats(r2 N, fmt(3 0)) ///
-&gt;         label legend varlabels(cigs &quot;Cigarettes&quot; faminc &quot;Family income&quot; parity &quot;Parity
-&gt; &quot; male &quot;Male&quot; ///
+&gt;         label legend varlabels(cigs &quot;Cigarettes&quot; faminc &quot;Family income&quot; parity &quot;Pari
+&gt; ty&quot; male &quot;Male&quot; ///
 &gt;                 white &quot;White&quot; motheduc &quot;Mother's education&quot; _cons &quot;Constant&quot;)
 
 --------------------------------------------------------------------
@@ -366,4 +366,4 @@ N                            1387            1387            1387
 * p&lt;0.05, ** p&lt;0.01, *** p&lt;0.001
 
 </code></pre>
-<p>There are many strong predictors of birthweight, including race, baby gender, and birth order (White babies, male babies, and higher-parity babies tend to be heavier). Neither family income nor mother&rsquo;s education are significant predictors after controlling for race, gender, birth order, and cigarettes smoked. Even after adding these other controls, cigarettes smoked remains a significant predictor of birthweight: Every additional cigarette smoked a day was associated with a decrease in birthweight of about 0.5 ounces. This provides strong evidence that the association between cigarettes and birthweight is not a matter of family income or mother&rsquo;s education. However, it is still insufficient to establish that cigarettes are causing lower birthweight, because there are many other omitted variables. For example, attitudes about health could be a factor: Women who do not know nor care much about ideas of health could be more likely to smoke <em>and</em> less likely to do other activities (taking pre-natal vitamins? Not drinking? I don&rsquo;t know a lot about babies) that could correlate with birthweight.</p>
+<p>There are many strong predictors of birthweight, including race, baby gender, and birth order (White babies, male babies, and higher-parity babies tend to be heavier). Neither family income nor mother&rsquo;s education are significant predictors after controlling for race, gender, birth order, and cigarettes smoked. In all models, cigarettes smoked remains a significant predictor of birthweight: Every additional cigarette smoked a day was associated with a decrease in birthweight of about 0.5 ounces. This provides strong evidence that the association between cigarettes and birthweight is not a matter of family income or mother&rsquo;s education. However, it is still insufficient to establish that cigarettes are causing lower birthweight, because there are many other omitted variables. For example, attitudes about health could be a factor: Women who do not know nor care much about ideas of health could be more likely to smoke <em>and</em> less likely to do other activities (taking pre-natal vitamins? Not drinking? I don&rsquo;t know a lot about babies) that could correlate with birthweight. Even model 3 explains only about 5% of the possible variation in birthweight, so there is a great deal of unexplained variation that could involve variables correlated with both birthweight and cigarette usage.</p>
