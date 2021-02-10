@@ -1,0 +1,322 @@
+<head>
+  <link rel="stylesheet" type="text/css" href="stmarkdown.css">
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
+</script>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function() {
+    htmlTableOfContents();
+} );                        
+
+function htmlTableOfContents( documentRef ) {
+    var documentRef = documentRef || document;
+    var toc = documentRef.getElementById("toc");
+//  Use headings inside <article> only:
+//  var headings = [].slice.call(documentRef.body.querySelectorAll('article h1, article h2, article h3, article h4, article h5, article h6'));
+    var headings = [].slice.call(documentRef.body.querySelectorAll('h1, h2, h3, h4, h5, h6'));
+    headings.forEach(function (heading, index) {
+        var ref = "toc" + index;
+        if ( heading.hasAttribute( "id" ) ) 
+            ref = heading.getAttribute( "id" );
+        else
+            heading.setAttribute( "id", ref );
+
+        var link = documentRef.createElement( "a" );
+        link.setAttribute( "href", "#"+ ref );
+        link.textContent = heading.textContent;
+
+        var div = documentRef.createElement( "div" );
+        div.setAttribute( "class", heading.tagName.toLowerCase() );
+        div.appendChild( link );
+        toc.appendChild( div );
+    });
+}
+
+
+try {
+    module.exports = htmlTableOfContents;
+} catch (e) {
+    // module.exports is not defined
+}
+</script>
+</head>
+<h1><a href="#pset-3" id="pset-3">PSet 3</a></h1>
+<p>Michelle Doughty<br />
+ECON 8848</p>
+<p>Began: 5 Feb 2020<br />
+Updated: 10 Feb 2020</p>
+<p>Collaborators: Hannah Denker, Dan Mangan</p>
+<h2><a href="#1-drawing-distributions" id="1-drawing-distributions">1. Drawing distributions</a></h2>
+<p><strong>Independent draws:</strong></p>
+<pre><code>. clear 
+
+. set obs 10000
+number of observations (_N) was 0, now 10,000
+
+. 
+. gen x1 = runiform(4,6)
+
+. gen x2 = rnormal(3,2)
+
+. gen x3 = invnorm(runiform(0.5,1))*3
+
+hist x1 //results not shown 
+hist x2 //results not shown 
+hist x3 //results not shown
+</code></pre>
+<p><strong>Joint distribution:</strong></p>
+<pre><code>. clear 
+
+. set obs 1000
+number of observations (_N) was 0, now 1,000
+
+. 
+. mat mu = (0,0)
+
+. mat sigma = (1,1.2 \ 1.2,4)
+
+. drawnorm x1 x2, mean(mu) cov(sigma)
+
+regress x2 x1 //results not shown
+scatter x2 x1 //results not shown
+</code></pre>
+<h2><a href="#2-the-world-series" id="2-the-world-series">2. The World Series</a></h2>
+<p><strong>Program</strong></p>
+<pre><code>. cap program drop xbarbinomial
+
+. program define xbarbinomial, rclass 
+  1. syntax[, n(integer 7) prob(real 0.6)] 
+  2. drop _all 
+  3. set obs `n' 
+  4. gen games = rbinomial(1,`prob') 
+  5. quietly sum games
+  6. return scalar win_per = `r(mean)'
+  7. return scalar win_all = (`r(mean)'&gt;.5) 
+  8. end 
+
+</code></pre>
+<p><strong>Simulations</strong></p>
+<pre><code>. forvalues prob = 0.6(0.2)0.8 {
+  2.         forvalues games = 3(2)7 {
+  3. 
+.                 di &quot;In a World Series with `games' games and a winning probability
+&gt;  of `prob':&quot;
+  4.                 qui simulate wins = r(win_all), nodots reps(1000) seed(8675309)
+&gt; : xbarbinomial, ///
+&gt;                         n(`games') prob(`prob')
+  5.                 qui su wins
+  6.                 loc per : display %3.1f (`r(mean)'*100)
+  7.                 di as text &quot;`per'% of the games were won by the better team&quot;
+  8.                 di &quot;&quot;
+  9.                 di &quot;&quot;
+ 10. 
+.         }
+ 11. }
+In a World Series with 3 games and a winning probability of .6:
+65.7% of the games were won by the better team
+
+
+In a World Series with 5 games and a winning probability of .6:
+68.6% of the games were won by the better team
+
+
+In a World Series with 7 games and a winning probability of .6:
+68.7% of the games were won by the better team
+
+
+In a World Series with 3 games and a winning probability of .8:
+88.3% of the games were won by the better team
+
+
+In a World Series with 5 games and a winning probability of .8:
+94.2% of the games were won by the better team
+
+
+In a World Series with 7 games and a winning probability of .8:
+96.7% of the games were won by the better team
+
+
+
+</code></pre>
+<p>Based on these data, the number of games involved in the World Series does not have a huge imapct on the probability of the better team winning. More than doubling the number of games played made a relatively small increase in the probability of the better team winning (3 percentage points for the p=0.60 case; 8.4 percentage points for the p=0.80 case). The probability of the better team winning each game had a much stronger impact on the probability of the better team winning overall, regardless of the number of games in the World Series. On the other hand, increasing the number of games in the Series has a very direct and substantial impact on the revenue associated with the game. Therefore, increasing revenue seems the more likely true reason for hosting 7 games.</p>
+<h2><a href="#3-regressions" id="3-regressions">3. Regressions</a></h2>
+<p><strong>Program</strong></p>
+<pre><code>. cap program drop dgp1
+
+. program define dgp1, rclass 
+  1. syntax[, n(integer 30) beta(real 1)] 
+  2. drop _all 
+  3. set obs `n' 
+  4. gen x = runiform(0, 10)
+  5. gen e = rnormal()
+  6. gen y = `beta'*x + e
+  7. reg y x 
+  8. return scalar betahat = _b[x]
+  9. return scalar se = _se[x]
+ 10. end 
+
+</code></pre>
+<p><strong>First Monte Carlo</strong> (where sample size = 30)</p>
+<pre><code>. simulate betahat=r(betahat) se =r(se) , nodots reps(1000) seed(5555) : dgp1
+
+      command:  dgp1
+      betahat:  r(betahat)
+           se:  r(se)
+
+
+. summarize
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+     betahat |      1,000    .9992475    .0622979   .8207853   1.199316
+          se |      1,000     .064076    .0101619   .0377812    .101819
+
+</code></pre>
+<p>The average $\hat{\beta}$ (0.999) is very close to the true average $\beta$ (1). The average standard error (.064) is very close to the true standard deviation of $\hat{\beta}$, which is also found in the summarize output as 0.062.</p>
+<pre><code>. gen tstat = (betahat - 1)/se
+
+. gen reject = abs(tstat)&gt;=1.96
+
+. su reject
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+      reject |      1,000        .062    .2412762          0          1
+
+</code></pre>
+<p>I would reject the null hypothesis 6.2% of the time, even though it is true. This is fitting with the cutoff t-statistic of 1.96, which corresponds to a p-value of 0.05: meaning that even if the null hypothesis is true, there is still about a 5% chance of getting a t-statistic of 1.96 or higher. My 6.2% is fairly close to that 5%.</p>
+<p><strong>Second Monte Carlo</strong> (where sample size = 100)</p>
+<pre><code>. simulate betahat=r(betahat) se =r(se) , nodots reps(1000) seed(5555) : dgp1, n(100
+&gt; )
+
+      command:  dgp1, n(100)
+      betahat:  r(betahat)
+           se:  r(se)
+
+
+. summarize
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+     betahat |      1,000    .9998912    .0367695   .8910151   1.113538
+          se |      1,000    .0349408     .003026   .0265662   .0501456
+
+</code></pre>
+<p>When the sample size of each simulated data is increased to 100, the average $\hat{\beta}$ (0.9999) is  even closer to the true $\beta$ of 1. The standard error is much smaller because the increase in sample size makes it more likely that each individual simulated $\hat{\beta}$ will be closer to the true mean.</p>
+<h2><a href="#4-regressions-with-heteroskedasticity" id="4-regressions-with-heteroskedasticity">4. Regressions with heteroskedasticity</a></h2>
+<p><strong>Program</strong></p>
+<pre><code>. cap program drop dgp2
+
+. program define dgp2, rclass 
+  1. syntax[, n(integer 250) beta(real 1) lambda(real 0)] 
+  2. drop _all 
+  3. set obs `n' 
+  4. gen x = runiform(0, 10)
+  5. gen e = rnormal()
+  6. gen v = rnormal()
+  7. gen y = `beta'*x + e + `lambda'*v*x
+  8. reg y x 
+  9. return scalar betahat_reg = _b[x]
+ 10. return scalar se_reg = _se[x]
+ 11. reg y x, robust
+ 12. return scalar betahat_rob = _b[x]
+ 13. return scalar se_rob = _se[x]
+ 14. end 
+
+</code></pre>
+<p><strong>Homoskedastic Monte Carlo</strong></p>
+<pre><code>. simulate betahat_reg=r(betahat_reg) se_reg =r(se_reg) ///
+&gt;         betahat_rob=r(betahat_rob) se_rob =r(se_rob), ///
+&gt;         nodots reps(1000) seed(5555) : dgp2
+
+       command:  dgp2
+   betahat_reg:  r(betahat_reg)
+        se_reg:  r(se_reg)
+   betahat_rob:  r(betahat_rob)
+        se_rob:  r(se_rob)
+
+
+. summarize
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+ betahat_reg |      1,000    1.000843    .0219921   .9353253   1.092384
+      se_reg |      1,000    .0219885    .0011696   .0184402   .0257361
+ betahat_rob |      1,000    1.000843    .0219921   .9353253   1.092384
+      se_rob |      1,000    .0219001    .0014751   .0174245   .0261358
+
+. qui su se_reg
+
+. loc se_reg_avg = `r(mean)'
+
+. qui su se_rob 
+
+</code></pre>
+<p>These two standard errors are very similar: the robust standard error is actually 0.402% smaller than the regular standard error. Both are very close to the true standard deviation of sample $\hat{\beta}$s.</p>
+<pre><code>. foreach err in reg rob {
+  2.         gen tstat_`err' = (betahat_`err' - 1)/se_`err'
+  3.         gen reject_`err' = abs(tstat_`err')&gt;=1.96
+  4. }
+
+. su reject*
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+  reject_reg |      1,000        .053    .2241456          0          1
+  reject_rob |      1,000        .055    .2280943          0          1
+
+. count if reject_reg != reject_rob
+  8
+
+</code></pre>
+<p>The rejection rate is 5.3% for both error configurations, with less than 1% of observations differing on their rejection status between robust and regular error specifications.</p>
+<p><strong>Heteroskedastic Monte Carlo</strong></p>
+<pre><code>. simulate betahat_reg=r(betahat_reg) se_reg =r(se_reg) ///
+&gt;         betahat_rob=r(betahat_rob) se_rob =r(se_rob), ///
+&gt;         nodots reps(1000) seed(5555) : dgp2, lambda(4)
+
+       command:  dgp2, lambda(4)
+   betahat_reg:  r(betahat_reg)
+        se_reg:  r(se_reg)
+   betahat_rob:  r(betahat_rob)
+        se_rob:  r(se_rob)
+
+
+. summarize
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+ betahat_reg |      1,000     .987738    .5549446  -.6868523   2.967272
+      se_reg |      1,000    .5075065     .034801   .4068417   .6145775
+ betahat_rob |      1,000     .987738    .5549446  -.6868523   2.967272
+      se_rob |      1,000    .5518648     .052411   .4271017   .7443725
+
+. qui su se_reg
+
+. loc se_reg_avg = `r(mean)'
+
+. qui su se_rob 
+
+</code></pre>
+<p>With more heteroskedasticity in the model, the standard errors are now substantially different: The robust standard error is 8.740% larger than the regular standard error. The robust standard error is very close to the true standard deviation of sample $\hat{\beta}$s, while the regular standard error significantly underestimates this deviation.</p>
+<pre><code>. foreach err in reg rob {
+  2.         gen tstat_`err' = (betahat_`err' - 1)/se_`err'
+  3.         gen reject_`err' = abs(tstat_`err')&gt;=1.96
+  4. }
+
+. su reject*
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+  reject_reg |      1,000        .068    .2518719          0          1
+  reject_rob |      1,000        .049     .215976          0          1
+
+. count if reject_reg != reject_rob
+  21
+
+</code></pre>
+<p>The rejection rate is now fairly different for the standard and robust error models. The robust standard error rejects the null hypothesis 4.9% of the time, which is appropriate for a t-statistic of 1.96 (corresponding to a p-value of 0.05). However, the regular standard error rejects considerably more often (6.8% of the time) due to underestimating the standard error. This would indicate that using classical standard errors when the data are heteroskedastic would lead you to overestimate the precision of your results and potentially lead you to erroneously reject the null hypothesis more frequently.</p>
+<p>Because of this, I believe I will continue defaulting to robust standard errors in my analyses. There is a substantial benefit in the unbiased estimation of standard errors, and seemingly very little downside.</p>
