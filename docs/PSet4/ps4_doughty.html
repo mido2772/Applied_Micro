@@ -1,0 +1,361 @@
+<head>
+  <link rel="stylesheet" type="text/css" href="stmarkdown.css">
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
+</script>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function() {
+    htmlTableOfContents();
+} );                        
+
+function htmlTableOfContents( documentRef ) {
+    var documentRef = documentRef || document;
+    var toc = documentRef.getElementById("toc");
+//  Use headings inside <article> only:
+//  var headings = [].slice.call(documentRef.body.querySelectorAll('article h1, article h2, article h3, article h4, article h5, article h6'));
+    var headings = [].slice.call(documentRef.body.querySelectorAll('h1, h2, h3, h4, h5, h6'));
+    headings.forEach(function (heading, index) {
+        var ref = "toc" + index;
+        if ( heading.hasAttribute( "id" ) ) 
+            ref = heading.getAttribute( "id" );
+        else
+            heading.setAttribute( "id", ref );
+
+        var link = documentRef.createElement( "a" );
+        link.setAttribute( "href", "#"+ ref );
+        link.textContent = heading.textContent;
+
+        var div = documentRef.createElement( "div" );
+        div.setAttribute( "class", heading.tagName.toLowerCase() );
+        div.appendChild( link );
+        toc.appendChild( div );
+    });
+}
+
+
+try {
+    module.exports = htmlTableOfContents;
+} catch (e) {
+    // module.exports is not defined
+}
+</script>
+</head>
+# PSet 4
+<p>Michelle Doughty<br />
+ECON 8848</p>
+<p>Began: 19 Feb 2020<br />
+Updated:</p>
+<p>Collaborators: Hannah Denker, Dan Mangan</p>
+<h2><a href="#1-acs-data" id="1-acs-data">1. ACS Data</a></h2>
+<h3><a href="#schooling-and-earnings" id="schooling-and-earnings">Schooling and earnings</a></h3>
+<pre><code>. use &quot;${datapath}acsrecoded.dta&quot;, clear
+
+. regress logearn educyears
+
+      Source |       SS           df       MS      Number of obs   = 1,043,212
+-------------+----------------------------------   F(1, 1043210)   &gt;  99999.00
+       Model |  103188.115         1  103188.115   Prob &gt; F        =    0.0000
+    Residual |  1029509.27 1,043,210  .986866755   R-squared       =    0.0911
+-------------+----------------------------------   Adj R-squared   =    0.0911
+       Total |  1132697.38 1,043,211  1.08577975   Root MSE        =    .99341
+
+------------------------------------------------------------------------------
+     logearn |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   educyears |   .1377721   .0004261   323.36   0.000      .136937    .1386072
+       _cons |   8.392541   .0059049  1421.28   0.000     8.380967    8.404114
+------------------------------------------------------------------------------
+
+. loc b_educ = _b[educyears]
+
+. predict linearfitted
+(option xb assumed; fitted values)
+
+</code></pre>
+<p>When years of education is treated as a continuous predictor of the log of earnings, an additional year of education is associated with a predicted 0.1% increase in earnings.</p>
+<pre><code>. loc dummies &quot;&quot;
+
+. levelsof educyears 
+0 2.5 6.5 9 10 11 12 14 16
+
+. foreach yr in `r(levels)' {
+  2.         loc str = subinstr(&quot;`yr'&quot;, &quot;.&quot;, &quot;_&quot;, .)
+  3.         gen educ_`str' = 0 if educyears &lt; .
+  4.         replace educ_`str' = 1 if educyears == `yr'
+  5.         if &quot;`str'&quot;!=&quot;12&quot; loc dummies &quot;`dummies' educ_`str'&quot;
+  6. }
+(3,729 real changes made)
+(4,034 real changes made)
+(22,240 real changes made)
+(13,029 real changes made)
+(15,277 real changes made)
+(21,684 real changes made)
+(320,379 real changes made)
+(351,345 real changes made)
+(353,427 real changes made)
+
+. regress logearn `dummies' //ommitting largest category (HS grad)
+
+      Source |       SS           df       MS      Number of obs   = 1,043,212
+-------------+----------------------------------   F(8, 1043203)   =  19034.96
+       Model |  144282.108         8  18035.2635   Prob &gt; F        =    0.0000
+    Residual |  988415.274 1,043,203  .947481242   R-squared       =    0.1274
+-------------+----------------------------------   Adj R-squared   =    0.1274
+       Total |  1132697.38 1,043,211  1.08577975   Root MSE        =    .97339
+
+------------------------------------------------------------------------------
+     logearn |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      educ_0 |  -.2684285   .0166433   -16.13   0.000    -.3010488   -.2358081
+    educ_2_5 |   -.282305   .0161527   -17.48   0.000    -.3139637   -.2506462
+    educ_6_5 |  -.2442052   .0070759   -34.51   0.000    -.2580738   -.2303366
+      educ_9 |  -.2383058   .0090996   -26.19   0.000    -.2561406    -.220471
+     educ_10 |   -.276183   .0084258   -32.78   0.000    -.2926972   -.2596687
+     educ_11 |  -.6313992   .0070555   -89.49   0.000    -.6452278   -.6175706
+     educ_14 |   .1559781   .0024504    63.65   0.000     .1511753    .1607809
+     educ_16 |   .7780413   .0024444   318.29   0.000     .7732503    .7828323
+       _cons |   10.00022   .0017781  5624.14   0.000     9.996733     10.0037
+------------------------------------------------------------------------------
+
+. loc educ_14 = _b[educ_14]
+
+. loc educ_16 = _b[educ_16]
+
+. predict discretefitted
+(option xb assumed; fitted values)
+
+</code></pre>
+<p>When years of education is treated categorically, the change in expected earnings associated with a year of education is no longer constrained to have the same value at different levels of education. The first ten years of education (0-10) are associated with only minimal differences in expected earnings. An 11th grade education is, oddly enough, associated with a much lower level of earnings than any value from 0-10. The jump from 12 years to 14 is associated with 0.2% higher predicted earnings, and the jump from a high school degree (12 years) to a college degree (16 years) is associated with 1.2%  higher earnings. The average difference predicted in the previous model was actually due to the larger differences at higher levels of education.</p>
+<pre><code>. sort educyears 
+
+. graph twoway (line linearfitted educyears, lwidth(thick)) ///
+&gt; (line discretefitted educyears, lwidth(thick)), ///
+&gt;         title(&quot;Linear regressions of log earnings on years of education&quot;) ///
+&gt;         xtitle(&quot;Years of education&quot;) ///
+&gt;         ytitle(&quot;Predicted log earnings&quot;) ///
+&gt;         legend(order(1 &quot;Treating education as continuous&quot; 2 &quot;Treating education as categorical&quot;) 
+&gt; ///
+&gt;                 ring(0) cols(1) pos(5))
+
+</code></pre>
+<p>Based on this graph and the results for both regressions, I would feel very uncomfortable modeling years of education as a continuous variable—it misrepresents the true conditional expectation at different levels of education.</p>
+<h3><a href="#schooling-and-earnings" id="schooling-and-earnings">Schooling and earnings</a></h3>
+<pre><code>. regress incwage exper expersq
+
+      Source |       SS           df       MS      Number of obs   = 1,105,144
+-------------+----------------------------------   F(2, 1105141)   =  30928.97
+       Model |  1.4224e+14         2  7.1120e+13   Prob &gt; F        =    0.0000
+    Residual |  2.5412e+15 1,105,141  2.2995e+09   R-squared       =    0.0530
+-------------+----------------------------------   Adj R-squared   =    0.0530
+       Total |  2.6835e+15 1,105,143  2.4282e+09   Root MSE        =     47953
+
+------------------------------------------------------------------------------
+     incwage |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       exper |   3548.565   15.87996   223.46   0.000     3517.441    3579.689
+     expersq |  -78.64307   .4232896  -185.79   0.000     -79.4727   -77.81344
+       _cons |   12211.03   128.9498    94.70   0.000     11958.29    12463.77
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>Because this is a quadratic regression, I can say in general that wages increase with experience at first, but that association weakens over time. The first year of experience is associated with $3,500 higher earnings, the 10th year of experience is associated with about $2,000 higher earnings, and the 20th year of experience is associated with about $500 higher earnings.</p>
+<pre><code>. regress logearn exper expersq
+
+      Source |       SS           df       MS      Number of obs   = 1,043,212
+-------------+----------------------------------   F(2, 1043209)   &gt;  99999.00
+       Model |  183634.813         2  91817.4064   Prob &gt; F        =    0.0000
+    Residual |   949062.57 1,043,209   .90975305   R-squared       =    0.1621
+-------------+----------------------------------   Adj R-squared   =    0.1621
+       Total |  1132697.38 1,043,211  1.08577975   Root MSE        =    .95381
+
+------------------------------------------------------------------------------
+     logearn |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       exper |   .1258925   .0003234   389.28   0.000     .1252587    .1265264
+     expersq |   -.002726   8.67e-06  -314.26   0.000     -.002743    -.002709
+       _cons |   9.189244   .0025969  3538.50   0.000     9.184154    9.194334
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>Once again, wages increase with experience at first, but that association weakens over time. However, now each year of experience is associated with a certain percentage increase in income, rather than a certain dollar amount. This feels more accurate to how income changes— an increase that depends on current levels of income is more realistic. Therefore, the log specification is preferred.</p>
+<pre><code>. regress logearn exper expersq if immigrant==0
+
+      Source |       SS           df       MS      Number of obs   =   887,875
+-------------+----------------------------------   F(2, 887872)    =  95918.70
+       Model |  172912.874         2  86456.4368   Prob &gt; F        =    0.0000
+    Residual |  800284.532   887,872  .901351244   R-squared       =    0.1777
+-------------+----------------------------------   Adj R-squared   =    0.1777
+       Total |  973197.405   887,874  1.09609855   Root MSE        =     .9494
+
+------------------------------------------------------------------------------
+     logearn |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       exper |   .1307775    .000354   369.43   0.000     .1300837    .1314713
+     expersq |  -.0028381   9.65e-06  -294.06   0.000     -.002857   -.0028192
+       _cons |   9.167072   .0027565  3325.57   0.000     9.161669    9.172474
+------------------------------------------------------------------------------
+
+. regress logearn exper expersq if immigrant==1
+
+      Source |       SS           df       MS      Number of obs   =   155,337
+-------------+----------------------------------   F(2, 155334)    =   7033.05
+       Model |   13194.948         2  6597.47402   Prob &gt; F        =    0.0000
+    Residual |  145713.724   155,334  .938067157   R-squared       =    0.0830
+-------------+----------------------------------   Adj R-squared   =    0.0830
+       Total |  158908.672   155,336  1.02299964   Root MSE        =    .96854
+
+------------------------------------------------------------------------------
+     logearn |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       exper |    .097911   .0008466   115.66   0.000     .0962518    .0995703
+     expersq |  -.0021418   .0000207  -103.52   0.000    -.0021823   -.0021012
+       _cons |   9.353612   .0077921  1200.40   0.000      9.33834    9.368884
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>Based on this, it appears as if non-immigrants have a larger initial return to experience, and a faster decrease in that return.</p>
+<pre><code>. gen imm_exper = immigrant * exper 
+
+. gen imm_expersq = immigrant * expersq
+
+. regress logearn exper expersq immigrant imm_exper imm_expersq
+
+      Source |       SS           df       MS      Number of obs   = 1,043,212
+-------------+----------------------------------   F(5, 1043206)   =  41176.75
+       Model |  186699.127         5  37339.8254   Prob &gt; F        =    0.0000
+    Residual |  945998.256 1,043,206  .906818266   R-squared       =    0.1648
+-------------+----------------------------------   Adj R-squared   =    0.1648
+       Total |  1132697.38 1,043,211  1.08577975   Root MSE        =    .95227
+
+------------------------------------------------------------------------------
+     logearn |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       exper |   .1307775   .0003551   368.32   0.000     .1300816    .1314734
+     expersq |  -.0028381   9.68e-06  -293.17   0.000    -.0028571   -.0028191
+   immigrant |   .1865405   .0081448    22.90   0.000     .1705769    .2025041
+   imm_exper |  -.0328664   .0009049   -36.32   0.000      -.03464   -.0310928
+ imm_expersq |   .0006963   .0000225    30.91   0.000     .0006522    .0007405
+       _cons |   9.167072   .0027649  3315.53   0.000     9.161652    9.172491
+------------------------------------------------------------------------------
+
+. test imm_exper = imm_expersq = 0
+
+ ( 1)  imm_exper - imm_expersq = 0
+ ( 2)  imm_exper = 0
+
+       F(  2,1043206) =  756.55
+            Prob &gt; F =    0.0000
+
+</code></pre>
+<p>To determine if the slope of the CEF depends on immigration status, we need to see if there is a difference in the relationship between experience and earnings for immigrants and non-immigrants. Based on this combined test (and, honestly, the t-test of each individual interaction term), we can reject the null hypothesis: There <em>is</em> a significant difference between the experience/earnings relationship for immigrants and the same relationship for non-immigrants.</p>
+<h3><a href="#marital-status-and-earnings" id="marital-status-and-earnings">Marital status and earnings</a></h3>
+<pre><code>. gen married = 0 if marst &lt; .
+
+. replace married = 1 if marst == 1
+(637,749 real changes made)
+
+. reg incwage married if female==0
+
+      Source |       SS           df       MS      Number of obs   =   578,722
+-------------+----------------------------------   F(1, 578720)    =  31777.39
+       Model |  1.0175e+14         1  1.0175e+14   Prob &gt; F        =    0.0000
+    Residual |  1.8531e+15   578,720  3.2020e+09   R-squared       =    0.0521
+-------------+----------------------------------   Adj R-squared   =    0.0521
+       Total |  1.9548e+15   578,721  3.3779e+09   Root MSE        =     56587
+
+------------------------------------------------------------------------------
+     incwage |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     married |   27036.64   151.6678   178.26   0.000     26739.37     27333.9
+       _cons |   34224.68   117.2182   291.97   0.000     33994.94    34454.42
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>Based on this, the average income of men who are either unmarried or have a non-present spouse is about $34,000. The average income of married men with present spouses is about $27,000 higher.</p>
+<pre><code>. forvalues i = 1/5 {
+  2.         generate marstat_`i' = 0 if marst &lt; .
+  3.         replace marstat_`i' = 1 if marst==`i'
+  4. }
+(637,749 real changes made)
+(20,865 real changes made)
+(22,682 real changes made)
+(112,562 real changes made)
+(9,293 real changes made)
+
+. reg incwage marstat*
+
+      Source |       SS           df       MS      Number of obs   = 1,105,144
+-------------+----------------------------------   F(5, 1105138)   =   8349.32
+       Model |  9.7678e+13         5  1.9536e+13   Prob &gt; F        =    0.0000
+    Residual |  2.5858e+15 1,105,138  2.3398e+09   R-squared       =    0.0364
+-------------+----------------------------------   Adj R-squared   =    0.0364
+       Total |  2.6835e+15 1,105,143  2.4282e+09   Root MSE        =     48371
+
+------------------------------------------------------------------------------
+     incwage |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   marstat_1 |   21390.58   106.8488   200.19   0.000     21181.16       21600
+   marstat_2 |   6932.405   346.2477    20.02   0.000     6253.771    7611.038
+   marstat_3 |   4767.149   333.0229    14.31   0.000     4114.435    5419.863
+   marstat_4 |   12460.22   168.9217    73.76   0.000     12129.14     12791.3
+   marstat_5 |   7266.631   509.4389    14.26   0.000     6268.148    8265.114
+       _cons |   28305.69   88.02181   321.58   0.000     28133.17    28478.21
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>Based on this regression, single and never-married men earn the least on average (about $28,000). Separated men make about $33,000 on average; married men with absent spouses and widowed men average about $35,000. Divorced men average $41,000, and married men with present spouses make the highest average income of about $50,000.</p>
+<pre><code>. test marstat_1 = marstat_2 = marstat_3 = marstat_4 = marstat_5 = 0
+
+ ( 1)  marstat_1 - marstat_2 = 0
+ ( 2)  marstat_1 - marstat_3 = 0
+ ( 3)  marstat_1 - marstat_4 = 0
+ ( 4)  marstat_1 - marstat_5 = 0
+ ( 5)  marstat_1 = 0
+
+       F(  5,1105138) = 8349.32
+            Prob &gt; F =    0.0000
+
+</code></pre>
+<p>I can reject the null hypothesis that there is no relationship between marital status and income.</p>
+<pre><code>. //Should have read ahead and chosen a better reference category. Woops!
+. gen marstat_6 = 0 if marst &lt; .
+
+. replace marstat_6 = 1 if marst==6
+(301,993 real changes made)
+
+. reg incwage marstat_2 marstat_3 marstat_4 marstat_5 marstat_6
+
+      Source |       SS           df       MS      Number of obs   = 1,105,144
+-------------+----------------------------------   F(5, 1105138)   =   8349.32
+       Model |  9.7678e+13         5  1.9536e+13   Prob &gt; F        =    0.0000
+    Residual |  2.5858e+15 1,105,138  2.3398e+09   R-squared       =    0.0364
+-------------+----------------------------------   Adj R-squared   =    0.0364
+       Total |  2.6835e+15 1,105,143  2.4282e+09   Root MSE        =     48371
+
+------------------------------------------------------------------------------
+     incwage |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   marstat_2 |  -14458.17   340.3064   -42.49   0.000    -15125.16   -13791.19
+   marstat_3 |  -16623.43   326.8413   -50.86   0.000    -17264.03   -15982.83
+   marstat_4 |   -8930.36   156.3827   -57.11   0.000    -9236.864   -8623.855
+   marstat_5 |  -14123.95   505.4196   -27.94   0.000    -15114.55   -13133.34
+   marstat_6 |  -21390.58   106.8488  -200.19   0.000       -21600   -21181.16
+       _cons |   49696.27   60.57087   820.46   0.000     49577.56    49814.99
+------------------------------------------------------------------------------
+
+. test marstat_2 = marstat_3 = marstat_4 = marstat_5 = marstat_6
+
+ ( 1)  marstat_2 - marstat_3 = 0
+ ( 2)  marstat_2 - marstat_4 = 0
+ ( 3)  marstat_2 - marstat_5 = 0
+ ( 4)  marstat_2 - marstat_6 = 0
+
+       F(  4,1105138) = 1403.37
+            Prob &gt; F =    0.0000
+
+</code></pre>
+<p>I can also conclucd e</p>
+<p>Marital Status and Earnings For all of the regressions in this section, limit your sample to men. • Run a regression of earnings (not log earnings) on a dummy variable that is 1 if the man is &ldquo;married, spouse present&rdquo; and zero otherwise. • Interpret the regression results. • Run a regression with earnings (not log earnings) as the dependent variable that allows for a different conditional expectation for all values of the &ldquo;marst&rdquo; variable. • Interpret this regression. Run a test of the null hypothesis that men of all marital statuses are paid equally. Can you reject this null? • Run a test of the null hypothesis that the differences in earnings between men who are &ldquo;married, spouse present&rdquo; and men in each of the other categories are all equal to each other, but not necessarily equal to zero. Can you reject this null hypothesis? • What do you conclude based on the results of these hypothesis tests?</p>

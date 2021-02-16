@@ -102,10 +102,9 @@ scatter x2 x1 //results not shown
 <pre><code>. forvalues prob = 0.6(0.2)0.8 {
   2.         forvalues games = 3(2)7 {
   3. 
-.                 di &quot;In a World Series with `games' games and a winning probability
-&gt;  of `prob':&quot;
-  4.                 qui simulate wins = r(win_all), nodots reps(1000) seed(8675309)
-&gt; : xbarbinomial, ///
+.                 di &quot;In a World Series with `games' games and a winning probability of `prob':&quot;
+  4.                 qui simulate wins = r(win_all), nodots reps(1000) seed(8675309): xbarbinomial,
+&gt;  ///
 &gt;                         n(`games') prob(`prob')
   5.                 qui su wins
   6.                 loc per : display %3.1f (`r(mean)'*100)
@@ -189,8 +188,7 @@ In a World Series with 7 games and a winning probability of .8:
 </code></pre>
 <p>I would reject the null hypothesis 6.2% of the time, even though it is true. This is fitting with the cutoff t-statistic of 1.96, which corresponds to a p-value of 0.05: meaning that even if the null hypothesis is true, there is still about a 5% chance of getting a t-statistic of 1.96 or higher. My 6.2% is fairly close to that 5%.</p>
 <p><strong>Second Monte Carlo</strong> (where sample size = 100)</p>
-<pre><code>. simulate betahat=r(betahat) se =r(se) , nodots reps(1000) seed(5555) : dgp1, n(100
-&gt; )
+<pre><code>. simulate betahat=r(betahat) se =r(se) , nodots reps(1000) seed(5555) : dgp1, n(100)
 
       command:  dgp1, n(100)
       betahat:  r(betahat)
