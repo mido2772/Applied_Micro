@@ -47,7 +47,7 @@ try {
 <p>Michelle Doughty<br />
 ECON 8848</p>
 <p>Began: 5 Feb 2020<br />
-Updated: 10 Feb 2020</p>
+Updated: 17 Feb 2020</p>
 <p>Collaborators: Hannah Denker, Dan Mangan</p>
 <h2><a href="#1-drawing-distributions" id="1-drawing-distributions">1. Drawing distributions</a></h2>
 <p><strong>Independent draws:</strong></p>
@@ -159,7 +159,7 @@ In a World Series with 7 games and a winning probability of .8:
 
 </code></pre>
 <p><strong>First Monte Carlo</strong> (where sample size = 30)</p>
-<pre><code>. simulate betahat=r(betahat) se =r(se) , nodots reps(1000) seed(5555) : dgp1
+<pre><code>. simulate betahat=r(betahat) se =r(se) , nodots reps(1000) seed(9999) : dgp1
 
       command:  dgp1
       betahat:  r(betahat)
@@ -170,11 +170,11 @@ In a World Series with 7 games and a winning probability of .8:
 
     Variable |        Obs        Mean    Std. Dev.       Min        Max
 -------------+---------------------------------------------------------
-     betahat |      1,000    .9992475    .0622979   .8207853   1.199316
-          se |      1,000     .064076    .0101619   .0377812    .101819
+     betahat |      1,000     1.00095    .0638484   .8021104   1.231011
+          se |      1,000      .06436    .0105546   .0395209   .1132242
 
 </code></pre>
-<p>The average $\hat{\beta}$ (0.999) is very close to the true average $\beta$ (1). The average standard error (.064) is very close to the true standard deviation of $\hat{\beta}$, which is also found in the summarize output as 0.062.</p>
+<p>The average $\hat{\beta}$ (1.001) is very close to the true average $\beta$ (1). The average standard error (.064) is very close to the true standard deviation of $\hat{\beta}$, which is also found in the summarize output as 0.063.</p>
 <pre><code>. gen tstat = (betahat - 1)/se
 
 . gen reject = abs(tstat)&gt;=1.96
@@ -183,10 +183,10 @@ In a World Series with 7 games and a winning probability of .8:
 
     Variable |        Obs        Mean    Std. Dev.       Min        Max
 -------------+---------------------------------------------------------
-      reject |      1,000        .062    .2412762          0          1
+      reject |      1,000         .05     .218054          0          1
 
 </code></pre>
-<p>I would reject the null hypothesis 6.2% of the time, even though it is true. This is fitting with the cutoff t-statistic of 1.96, which corresponds to a p-value of 0.05: meaning that even if the null hypothesis is true, there is still about a 5% chance of getting a t-statistic of 1.96 or higher. My 6.2% is fairly close to that 5%.</p>
+<p>I would reject the null hypothesis 5% of the time, even though it is true. This is fitting with the cutoff t-statistic of 1.96, which corresponds to a p-value of 0.05: meaning that even if the null hypothesis is true, there is still about a 5% chance of getting a t-statistic of 1.96 or higher. My 5% matches that theoretical cutoff.</p>
 <p><strong>Second Monte Carlo</strong> (where sample size = 100)</p>
 <pre><code>. simulate betahat=r(betahat) se =r(se) , nodots reps(1000) seed(5555) : dgp1, n(100)
 
