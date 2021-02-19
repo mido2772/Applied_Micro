@@ -102,18 +102,21 @@ scatter x2 x1 //results not shown
 <pre><code>. forvalues prob = 0.6(0.2)0.8 {
   2.         forvalues games = 3(2)7 {
   3. 
-.                 di &quot;In a World Series with `games' games and a winning probability of `prob':&quot;
-  4.                 qui simulate wins = r(win_all), nodots reps(1000) seed(8675309): xbarbinomial,
-&gt;  ///
+.                 di &quot;&quot;
+  4.                 di &quot;&quot;
+  5.                 di &quot;In a World Series with `games' games and a winning probabilit
+&gt; y of `prob':&quot;
+  6.                 qui simulate wins = r(win_all), nodots reps(1000) seed(8675309): 
+&gt; xbarbinomial, ///
 &gt;                         n(`games') prob(`prob')
-  5.                 qui su wins
-  6.                 loc per : display %3.1f (`r(mean)'*100)
-  7.                 di as text &quot;`per'% of the games were won by the better team&quot;
-  8.                 di &quot;&quot;
-  9.                 di &quot;&quot;
+  7.                 qui su wins
+  8.                 loc per : display %3.1f (`r(mean)'*100)
+  9.                 di as text &quot;`per'% of the games were won by the better team&quot;
  10. 
 .         }
  11. }
+
+
 In a World Series with 3 games and a winning probability of .6:
 65.7% of the games were won by the better team
 
@@ -137,10 +140,8 @@ In a World Series with 5 games and a winning probability of .8:
 In a World Series with 7 games and a winning probability of .8:
 96.7% of the games were won by the better team
 
-
-
 </code></pre>
-<p>Based on these data, the number of games involved in the World Series does not have a huge imapct on the probability of the better team winning. More than doubling the number of games played made a relatively small increase in the probability of the better team winning (3 percentage points for the p=0.60 case; 8.4 percentage points for the p=0.80 case). The probability of the better team winning each game had a much stronger impact on the probability of the better team winning overall, regardless of the number of games in the World Series. On the other hand, increasing the number of games in the Series has a very direct and substantial impact on the revenue associated with the game. Therefore, increasing revenue seems the more likely true reason for hosting 7 games.</p>
+<p>Based on these data, the number of games involved in the World Series does not have a huge impact on the probability of the better team winning. More than doubling the number of games played made a relatively small increase in the probability of the better team winning (3 percentage points for the p=0.60 case; 8.4 percentage points for the p=0.80 case). The probability of the better team winning each game had a much stronger impact on the probability of the better team winning overall, regardless of the number of games in the World Series. On the other hand, increasing the number of games in the Series has a very direct and substantial impact on the revenue associated with the game. Therefore, increasing revenue seems the more likely true reason for hosting 7 games.</p>
 <h2><a href="#3-regressions" id="3-regressions">3. Regressions</a></h2>
 <p><strong>Program</strong></p>
 <pre><code>. cap program drop dgp1
@@ -174,7 +175,7 @@ In a World Series with 7 games and a winning probability of .8:
           se |      1,000      .06436    .0105546   .0395209   .1132242
 
 </code></pre>
-<p>The average $\hat{\beta}$ (1.001) is very close to the true average $\beta$ (1). The average standard error (.064) is very close to the true standard deviation of $\hat{\beta}$, which is also found in the summarize output as 0.063.</p>
+<p>The average $\hat{\beta}$ (1.001) is very close to the true average $\beta$ (1). The average standard error (.0644) is very close to the true standard deviation of $\hat{\beta}$, which is also found in the summarize output as .0638.</p>
 <pre><code>. gen tstat = (betahat - 1)/se
 
 . gen reject = abs(tstat)&gt;=1.96
@@ -270,7 +271,7 @@ In a World Series with 7 games and a winning probability of .8:
   8
 
 </code></pre>
-<p>The rejection rate is 5.3% for both error configurations, with less than 1% of observations differing on their rejection status between robust and regular error specifications.</p>
+<p>The rejection rate is about 5% for both error configurations, with less than 1% of observations differing on their rejection status between robust and regular error specifications.</p>
 <p><strong>Heteroskedastic Monte Carlo</strong></p>
 <pre><code>. simulate betahat_reg=r(betahat_reg) se_reg =r(se_reg) ///
 &gt;         betahat_rob=r(betahat_rob) se_rob =r(se_rob), ///
