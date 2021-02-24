@@ -47,27 +47,41 @@ try {
 <p>Michelle Doughty<br />
 ECON 8848</p>
 <p>Began: 19 Feb 2020<br />
-Updated:</p>
-<p>Collaborators: Hannah Denker, Dan Mangan</p>
+Updated: 24 Feb 2020</p>
+<p>Collaborators: Hannah Denker</p>
 <h2><a href="#1-acs-data" id="1-acs-data">1. ACS Data</a></h2>
 <h3><a href="#schooling-and-earnings" id="schooling-and-earnings">Schooling and earnings</a></h3>
-<pre><code>. use &quot;${datapath}acsrecoded.dta&quot;, clear
+<pre><code>. use &quot;${datapath}acsrecoded.dta&quot;, clear 
 
 . regress logearn educyears, robust
 
-Linear regression                               Number of obs     =  1,043,212
-                                                F(1, 1043210)     =   82897.01
-                                                Prob &gt; F          =     0.0000
-                                                R-squared         =     0.0911
-                                                Root MSE          =     .99341
+Linear regression                               Number of obs 
+&gt;     =  1,043,212
+                                                F(1, 1043210) 
+&gt;     =   82897.01
+                                                Prob &gt; F      
+&gt;     =     0.0000
+                                                R-squared     
+&gt;     =     0.0911
+                                                Root MSE      
+&gt;     =     .99341
 
-------------------------------------------------------------------------------
+--------------------------------------------------------------
+&gt; ----------------
              |               Robust
-     logearn |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-   educyears |   .1377721   .0004785   287.92   0.000     .1368342    .1387099
-       _cons |   8.392541   .0066844  1255.55   0.000     8.379439    8.405642
-------------------------------------------------------------------------------
+     logearn |      Coef.   Std. Err.      t    P&gt;|t|     [95%
+&gt;  Con                                                        
+&gt;     f. Interval]
+-------------+------------------------------------------------
+&gt; ----------------
+   educyears |   .1377721   .0004785   287.92   0.000     .136
+&gt; 8342                                                        
+&gt;         .1387099
+       _cons |   8.392541   .0066844  1255.55   0.000     8.37
+&gt; 9439                                                        
+&gt;         8.405642
+--------------------------------------------------------------
+&gt; ----------------
 
 . loc b_educ = _b[educyears]
 
@@ -85,7 +99,8 @@ Linear regression                               Number of obs     =  1,043,212
   2.         loc str = subinstr(&quot;`yr'&quot;, &quot;.&quot;, &quot;_&quot;, .)
   3.         gen educ_`str' = 0 if educyears &lt; .
   4.         replace educ_`str' = 1 if educyears == `yr'
-  5.         if &quot;`str'&quot;!=&quot;12&quot; loc dummies &quot;`dummies' educ_`str'&quot;
+  5.         if &quot;`str'&quot;!=&quot;12&quot; loc dummies &quot;`dummies' educ_`str
+&gt; '&quot;
   6. }
 (3,729 real changes made)
 (4,034 real changes made)
@@ -97,28 +112,57 @@ Linear regression                               Number of obs     =  1,043,212
 (351,345 real changes made)
 (353,427 real changes made)
 
-. regress logearn `dummies', robust //ommitting largest category (HS grad)
+. regress logearn `dummies', robust //ommitting largest catego
+&gt; ry (HS grad)
 
-Linear regression                               Number of obs     =  1,043,212
-                                                F(8, 1043203)     =   19124.23
-                                                Prob &gt; F          =     0.0000
-                                                R-squared         =     0.1274
-                                                Root MSE          =     .97339
+Linear regression                               Number of obs 
+&gt;     =  1,043,212
+                                                F(8, 1043203) 
+&gt;     =   19124.23
+                                                Prob &gt; F      
+&gt;     =     0.0000
+                                                R-squared     
+&gt;     =     0.1274
+                                                Root MSE      
+&gt;     =     .97339
 
-------------------------------------------------------------------------------
+--------------------------------------------------------------
+&gt; ----------------
              |               Robust
-     logearn |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-      educ_0 |  -.2684285   .0170629   -15.73   0.000    -.3018712   -.2349858
-    educ_2_5 |   -.282305   .0136145   -20.74   0.000     -.308989    -.255621
-    educ_6_5 |  -.2442052   .0063296   -38.58   0.000    -.2566109   -.2317994
-      educ_9 |  -.2383058   .0087021   -27.38   0.000    -.2553615     -.22125
-     educ_10 |   -.276183   .0091137   -30.30   0.000    -.2940456   -.2583204
-     educ_11 |  -.6313992   .0091885   -68.72   0.000    -.6494083   -.6133901
-     educ_14 |   .1559781   .0024729    63.08   0.000     .1511313    .1608249
-     educ_16 |   .7780413   .0023991   324.31   0.000     .7733392    .7827434
-       _cons |   10.00022   .0017741  5636.75   0.000      9.99674    10.00369
-------------------------------------------------------------------------------
+     logearn |      Coef.   Std. Err.      t    P&gt;|t|     [95%
+&gt;  Con                                                        
+&gt;     f. Interval]
+-------------+------------------------------------------------
+&gt; ----------------
+      educ_0 |  -.2684285   .0170629   -15.73   0.000    -.301
+&gt; 8712                                                        
+&gt;        -.2349858
+    educ_2_5 |   -.282305   .0136145   -20.74   0.000     -.30
+&gt; 8989                                                        
+&gt;         -.255621
+    educ_6_5 |  -.2442052   .0063296   -38.58   0.000    -.256
+&gt; 6109                                                        
+&gt;        -.2317994
+      educ_9 |  -.2383058   .0087021   -27.38   0.000    -.255
+&gt; 3615                                                        
+&gt;          -.22125
+     educ_10 |   -.276183   .0091137   -30.30   0.000    -.294
+&gt; 0456                                                        
+&gt;        -.2583204
+     educ_11 |  -.6313992   .0091885   -68.72   0.000    -.649
+&gt; 4083                                                        
+&gt;        -.6133901
+     educ_14 |   .1559781   .0024729    63.08   0.000     .151
+&gt; 1313                                                        
+&gt;         .1608249
+     educ_16 |   .7780413   .0023991   324.31   0.000     .773
+&gt; 3392                                                        
+&gt;         .7827434
+       _cons |   10.00022   .0017741  5636.75   0.000      9.9
+&gt; 9674                                                        
+&gt;         10.00369
+--------------------------------------------------------------
+&gt; ----------------
 
 . loc educ_14 = _b[educ_14]
 
@@ -131,90 +175,168 @@ Linear regression                               Number of obs     =  1,043,212
 <p>When years of education is treated categorically, the change in expected earnings associated with a year of education is no longer constrained to have the same value at different levels of education. The first ten years of education (0-10) are associated with only minimal differences in expected earnings. An 11th grade education is, oddly enough, associated with a much lower level of earnings than any value from 0-10. The jump from 12 years to 14 is associated with 16.9% higher predicted earnings, and the jump from a high school degree (12 years) to a college degree (16 years) is associated with 117.7%  higher earnings. The average difference predicted in the previous model was actually due to the larger differences at higher levels of education.</p>
 <pre><code>. sort educyears 
 
-. graph twoway (line linearfitted educyears, lwidth(thick)) ///
-&gt; (line discretefitted educyears, lwidth(thick)), ///
-&gt;         title(&quot;Linear regressions of log earnings on years of education&quot;) ///
+.         //graph takes too long to draw. This code shortens t
+&gt; hat process
+. preserve
+
+. keep linearfitted discretefitted educyears
+
+. duplicates drop 
+
+. graph twoway (connect linearfitted educyears, lwidth(thick))
+&gt;  ///
+&gt; (connect discretefitted educyears, lwidth(thick)), ///
+&gt;         title(&quot;Linear regressions of log earnings on years o
+&gt; f education&quot;) ///
 &gt;         xtitle(&quot;Years of education&quot;) ///
 &gt;         ytitle(&quot;Predicted log earnings&quot;) ///
-&gt;         legend(order(1 &quot;Treating education as continuous&quot; 2 &quot;Treating education as c
-&gt; ategorical&quot;) ///
+&gt;         legend(order(1 &quot;Treating education as continuous&quot; 2 
+&gt; &quot;Treating education as categorical&quot;) ///
 &gt;                 ring(0) cols(1) pos(5))
+
+. restore 
 
 </code></pre>
 <img src="yearsregs.svg" height="400" >
 <p>Based on this graph and the results for both regressions, I would feel very uncomfortable modeling years of education as a continuous variable—it misrepresents the true conditional expectation at different levels of education.</p>
 <h3><a href="#schooling-and-earnings" id="schooling-and-earnings">Schooling and earnings</a></h3>
-<pre><code>. regress incwage exper expersq, robust
+<pre><code>. regress incwage exper expersq if incwage&gt;0, robust
 
-Linear regression                               Number of obs     =  1,105,144
-                                                F(2, 1105141)     =   61943.10
-                                                Prob &gt; F          =     0.0000
-                                                R-squared         =     0.0530
-                                                Root MSE          =      47953
+Linear regression                               Number of obs 
+&gt;     =  1,043,212
+                                                F(2, 1043209) 
+&gt;     =   71970.21
+                                                Prob &gt; F      
+&gt;     =     0.0000
+                                                R-squared     
+&gt;     =     0.0652
+                                                Root MSE      
+&gt;     =      47958
 
-------------------------------------------------------------------------------
+--------------------------------------------------------------
+&gt; ----------------
              |               Robust
-     incwage |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-       exper |   3548.565   12.27717   289.04   0.000     3524.502    3572.628
-     expersq |  -78.64307   .3503288  -224.48   0.000     -79.3297   -77.95644
-       _cons |   12211.03   64.51241   189.28   0.000     12084.59    12337.47
-------------------------------------------------------------------------------
+     incwage |      Coef.   Std. Err.      t    P&gt;|t|     [95%
+&gt;  Con                                                        
+&gt;     f. Interval]
+-------------+------------------------------------------------
+&gt; ----------------
+       exper |   3814.429   12.65501   301.42   0.000     3789
+&gt; .626                                                        
+&gt;         3839.233
+     expersq |  -82.84785   .3629845  -228.24   0.000    -83.5
+&gt; 5928                                                        
+&gt;        -82.13641
+       _cons |   11906.87   65.04905   183.04   0.000     1177
+&gt; 9.38                                                        
+&gt;         12034.37
+--------------------------------------------------------------
+&gt; ----------------
 
 </code></pre>
-<p>Because this is a quadratic regression, I can say in general that wages increase with experience at first, but that association weakens over time. The first year of experience is associated with 3,500 higher earnings, the 10th year of experience is associated with about 2,000 higher earnings, and the 20th year of experience is associated with about 500 higher earnings.</p>
+<p>Note: regression is limited to people who are earning money. This is a better representation of the population of interest and ensures that this regression and the next are comparable.</p>
+<p>Because this is a quadratic regression, I can say in general that wages increase with experience at first, but that association weakens over time. The first year of experience (comparing people with 1 year of experience to people with 0 years) is associated with 3,700 additional dollars. In comparison, the 10th year of experience (comparing people with 10 years of experience to people with 9 years) is associated with about or 2,200 additional dollars, and the 20th year of experience (comparing people with 20 years of experience to people with 19 years) with about 600 additional dollars.</p>
+<p><em>Note 2: I cannot for the life of me get the dollar sign to work properly in markdown. So I keep writing the word out. Sorry about that.</em></p>
 <pre><code>. regress logearn exper expersq, robust
 
-Linear regression                               Number of obs     =  1,043,212
-                                                F(2, 1043209)     =   80664.94
-                                                Prob &gt; F          =     0.0000
-                                                R-squared         =     0.1621
-                                                Root MSE          =     .95381
+Linear regression                               Number of obs 
+&gt;     =  1,043,212
+                                                F(2, 1043209) 
+&gt;     =   80664.94
+                                                Prob &gt; F      
+&gt;     =     0.0000
+                                                R-squared     
+&gt;     =     0.1621
+                                                Root MSE      
+&gt;     =     .95381
 
-------------------------------------------------------------------------------
+--------------------------------------------------------------
+&gt; ----------------
              |               Robust
-     logearn |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-       exper |   .1258925   .0003506   359.05   0.000     .1252053    .1265798
-     expersq |   -.002726   9.03e-06  -301.94   0.000    -.0027437   -.0027083
-       _cons |   9.189244   .0029542  3110.62   0.000     9.183454    9.195034
-------------------------------------------------------------------------------
+     logearn |      Coef.   Std. Err.      t    P&gt;|t|     [95%
+&gt;  Con                                                        
+&gt;     f. Interval]
+-------------+------------------------------------------------
+&gt; ----------------
+       exper |   .1258925   .0003506   359.05   0.000     .125
+&gt; 2053                                                        
+&gt;         .1265798
+     expersq |   -.002726   9.03e-06  -301.94   0.000    -.002
+&gt; 7437                                                        
+&gt;        -.0027083
+       _cons |   9.189244   .0029542  3110.62   0.000     9.18
+&gt; 3454                                                        
+&gt;         9.195034
+--------------------------------------------------------------
+&gt; ----------------
 
 </code></pre>
-<p>Once again, wages increase with experience at first, but that association weakens over time. However, now each year of experience is associated with a certain percentage increase in income, rather than a certain dollar amount. This feels more accurate to how income changes— an increase that depends on current levels of income is more realistic. Therefore, the log specification is preferred.</p>
+<p>Once again, wages increase with experience, but that yearly return decreases over time. However, now each year of experience is associated with a certain percentage increase in income, rather than a certain dollar amount. This feels more accurate to how income changes— an increase that depends on current levels of income is more realistic. Therefore, the log specification is preferred.</p>
 <pre><code>. regress logearn exper expersq if immigrant==0, robust
 
-Linear regression                               Number of obs     =    887,875
-                                                F(2, 887872)      =   76608.13
-                                                Prob &gt; F          =     0.0000
-                                                R-squared         =     0.1777
-                                                Root MSE          =      .9494
+Linear regression                               Number of obs 
+&gt;     =    887,875
+                                                F(2, 887872)  
+&gt;     =   76608.13
+                                                Prob &gt; F      
+&gt;     =     0.0000
+                                                R-squared     
+&gt;     =     0.1777
+                                                Root MSE      
+&gt;     =      .9494
 
-------------------------------------------------------------------------------
+--------------------------------------------------------------
+&gt; ----------------
              |               Robust
-     logearn |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-       exper |   .1307775   .0003837   340.79   0.000     .1300254    .1315296
-     expersq |  -.0028381   .0000101  -282.31   0.000    -.0028578   -.0028184
-       _cons |   9.167072   .0031434  2916.32   0.000     9.160911    9.173232
-------------------------------------------------------------------------------
+     logearn |      Coef.   Std. Err.      t    P&gt;|t|     [95%
+&gt;  Con                                                        
+&gt;     f. Interval]
+-------------+------------------------------------------------
+&gt; ----------------
+       exper |   .1307775   .0003837   340.79   0.000     .130
+&gt; 0254                                                        
+&gt;         .1315296
+     expersq |  -.0028381   .0000101  -282.31   0.000    -.002
+&gt; 8578                                                        
+&gt;        -.0028184
+       _cons |   9.167072   .0031434  2916.32   0.000     9.16
+&gt; 0911                                                        
+&gt;         9.173232
+--------------------------------------------------------------
+&gt; ----------------
 
 . regress logearn exper expersq if immigrant==1, robust
 
-Linear regression                               Number of obs     =    155,337
-                                                F(2, 155334)      =    5730.49
-                                                Prob &gt; F          =     0.0000
-                                                R-squared         =     0.0830
-                                                Root MSE          =     .96854
+Linear regression                               Number of obs 
+&gt;     =    155,337
+                                                F(2, 155334)  
+&gt;     =    5730.49
+                                                Prob &gt; F      
+&gt;     =     0.0000
+                                                R-squared     
+&gt;     =     0.0830
+                                                Root MSE      
+&gt;     =     .96854
 
-------------------------------------------------------------------------------
+--------------------------------------------------------------
+&gt; ----------------
              |               Robust
-     logearn |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-       exper |    .097911   .0009197   106.46   0.000     .0961084    .0997137
-     expersq |  -.0021418   .0000214   -99.98   0.000    -.0021838   -.0020998
-       _cons |   9.353612   .0088208  1060.41   0.000     9.336324    9.370901
-------------------------------------------------------------------------------
+     logearn |      Coef.   Std. Err.      t    P&gt;|t|     [95%
+&gt;  Con                                                        
+&gt;     f. Interval]
+-------------+------------------------------------------------
+&gt; ----------------
+       exper |    .097911   .0009197   106.46   0.000     .096
+&gt; 1084                                                        
+&gt;         .0997137
+     expersq |  -.0021418   .0000214   -99.98   0.000    -.002
+&gt; 1838                                                        
+&gt;        -.0020998
+       _cons |   9.353612   .0088208  1060.41   0.000     9.33
+&gt; 6324                                                        
+&gt;         9.370901
+--------------------------------------------------------------
+&gt; ----------------
 
 </code></pre>
 <p>Based on this, it appears as if non-immigrants have a larger initial return to experience, and a faster decrease in that return. However, we cannot be sure if those differences are statistically significant (i.e. likely a result of true population differences rather than a quirk of sampling).</p>
@@ -222,25 +344,48 @@ Linear regression                               Number of obs     =    155,337
 
 . gen imm_expersq = immigrant * expersq
 
-. regress logearn exper expersq immigrant imm_exper imm_expersq, robust
+. regress logearn exper expersq immigrant imm_exper imm_expers
+&gt; q, robust
 
-Linear regression                               Number of obs     =  1,043,212
-                                                F(5, 1043206)     =   33189.10
-                                                Prob &gt; F          =     0.0000
-                                                R-squared         =     0.1648
-                                                Root MSE          =     .95227
+Linear regression                               Number of obs 
+&gt;     =  1,043,212
+                                                F(5, 1043206) 
+&gt;     =   33189.10
+                                                Prob &gt; F      
+&gt;     =     0.0000
+                                                R-squared     
+&gt;     =     0.1648
+                                                Root MSE      
+&gt;     =     .95227
 
-------------------------------------------------------------------------------
+--------------------------------------------------------------
+&gt; ----------------
              |               Robust
-     logearn |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-       exper |   .1307775   .0003837   340.79   0.000     .1300254    .1315296
-     expersq |  -.0028381   .0000101  -282.31   0.000    -.0028578   -.0028184
-   immigrant |   .1865405   .0093641    19.92   0.000     .1681872    .2048937
-   imm_exper |  -.0328664   .0009966   -32.98   0.000    -.0348196   -.0309132
- imm_expersq |   .0006963   .0000237    29.43   0.000     .0006499    .0007427
-       _cons |   9.167072   .0031434  2916.32   0.000     9.160911    9.173232
-------------------------------------------------------------------------------
+     logearn |      Coef.   Std. Err.      t    P&gt;|t|     [95%
+&gt;  Con                                                        
+&gt;     f. Interval]
+-------------+------------------------------------------------
+&gt; ----------------
+       exper |   .1307775   .0003837   340.79   0.000     .130
+&gt; 0254                                                        
+&gt;         .1315296
+     expersq |  -.0028381   .0000101  -282.31   0.000    -.002
+&gt; 8578                                                        
+&gt;        -.0028184
+   immigrant |   .1865405   .0093641    19.92   0.000     .168
+&gt; 1872                                                        
+&gt;         .2048937
+   imm_exper |  -.0328664   .0009966   -32.98   0.000    -.034
+&gt; 8196                                                        
+&gt;        -.0309132
+ imm_expersq |   .0006963   .0000237    29.43   0.000     .000
+&gt; 6499                                                        
+&gt;         .0007427
+       _cons |   9.167072   .0031434  2916.32   0.000     9.16
+&gt; 0911                                                        
+&gt;         9.173232
+--------------------------------------------------------------
+&gt; ----------------
 
 . test imm_exper = imm_expersq = 0
 
@@ -260,22 +405,36 @@ Linear regression                               Number of obs     =  1,043,212
 
 . reg incwage married if female==0, robust
 
-Linear regression                               Number of obs     =    578,722
-                                                F(1, 578720)      =   37721.33
-                                                Prob &gt; F          =     0.0000
-                                                R-squared         =     0.0521
-                                                Root MSE          =      56587
+Linear regression                               Number of obs 
+&gt;     =    578,722
+                                                F(1, 578720)  
+&gt;     =   37721.33
+                                                Prob &gt; F      
+&gt;     =     0.0000
+                                                R-squared     
+&gt;     =     0.0521
+                                                Root MSE      
+&gt;     =      56587
 
-------------------------------------------------------------------------------
+--------------------------------------------------------------
+&gt; ----------------
              |               Robust
-     incwage |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-     married |   27036.64   139.2064   194.22   0.000      26763.8    27309.48
-       _cons |   34224.68   84.23446   406.30   0.000     34059.58    34389.78
-------------------------------------------------------------------------------
+     incwage |      Coef.   Std. Err.      t    P&gt;|t|     [95%
+&gt;  Con                                                        
+&gt;     f. Interval]
+-------------+------------------------------------------------
+&gt; ----------------
+     married |   27036.64   139.2064   194.22   0.000      267
+&gt; 63.8                                                        
+&gt;         27309.48
+       _cons |   34224.68   84.23446   406.30   0.000     3405
+&gt; 9.58                                                        
+&gt;         34389.78
+--------------------------------------------------------------
+&gt; ----------------
 
 </code></pre>
-<p>Based on this, the average income of men who are either unmarried or have a non-present spouse is about 34,000. The average income of married men with present spouses is about 27,000 higher.</p>
+<p>Based on this, the average income of men who are either unmarried, separated, divorced, widowed, or have an absent spouse is about 34,000 dollars. The average income of married men with present spouses is about 27,000 more dollars (or a total income of 61,000.</p>
 <pre><code>. forvalues i = 1/5 {
   2.         generate marstat_`i' = 0 if marst &lt; .
   3.         replace marstat_`i' = 1 if marst==`i'
@@ -286,29 +445,52 @@ Linear regression                               Number of obs     =    578,722
 (112,562 real changes made)
 (9,293 real changes made)
 
-. reg incwage marstat*, robust
+. reg incwage marstat* if female==0, robust
 
-Linear regression                               Number of obs     =  1,105,144
-                                                F(5, 1105138)     =   10882.47
-                                                Prob &gt; F          =     0.0000
-                                                R-squared         =     0.0364
-                                                Root MSE          =      48371
+Linear regression                               Number of obs 
+&gt;     =    578,722
+                                                F(5, 578716)  
+&gt;     =    9710.79
+                                                Prob &gt; F      
+&gt;     =     0.0000
+                                                R-squared     
+&gt;     =     0.0575
+                                                Root MSE      
+&gt;     =      56423
 
-------------------------------------------------------------------------------
+--------------------------------------------------------------
+&gt; ----------------
              |               Robust
-     incwage |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-   marstat_1 |   21390.58   92.63189   230.92   0.000     21209.02    21572.13
-   marstat_2 |   6932.405   307.7866    22.52   0.000     6329.153    7535.656
-   marstat_3 |   4767.149   258.0277    18.48   0.000     4261.424    5272.875
-   marstat_4 |   12460.22   134.9684    92.32   0.000     12195.69    12724.75
-   marstat_5 |   7266.631   404.7729    17.95   0.000     6473.289    8059.972
-       _cons |   28305.69   60.98846   464.12   0.000     28186.16    28425.23
-------------------------------------------------------------------------------
+     incwage |      Coef.   Std. Err.      t    P&gt;|t|     [95%
+&gt;  Con                                                        
+&gt;     f. Interval]
+-------------+------------------------------------------------
+&gt; ----------------
+   marstat_1 |    31415.6   143.0997   219.54   0.000     3113
+&gt; 5.13                                                        
+&gt;         31696.07
+   marstat_2 |   8670.847   448.5423    19.33   0.000     7791
+&gt; .718                                                        
+&gt;         9549.976
+   marstat_3 |   11425.25   514.4305    22.21   0.000     1041
+&gt; 6.98                                                        
+&gt;         12433.52
+   marstat_4 |   16115.55   232.0472    69.45   0.000     1566
+&gt; 0.75                                                        
+&gt;         16570.36
+   marstat_5 |   16356.22    1096.22    14.92   0.000     1420
+&gt; 7.66                                                        
+&gt;         18504.77
+       _cons |   29845.72   90.52334   329.70   0.000     2966
+&gt; 8.29                                                        
+&gt;         30023.14
+--------------------------------------------------------------
+&gt; ----------------
 
 </code></pre>
-<p>Based on this regression, single and never-married men earn the least on average (about 28,000). Separated men make about 33,000 on average; married men with absent spouses and widowed men average about 35,000. Divorced men average 41,000, and married men with present spouses make the highest average income of about 50,000.</p>
-<pre><code>. test marstat_1 = marstat_2 = marstat_3 = marstat_4 = marstat_5 = 0
+<p>Based on this regression, single and never-married men earn the least on average (about 30,000 dollars). Men with absent spouses make about 38,000 dollars, and separated men make about 41,000 dollars. Divorced and widowed men average about 46,000 dollars in income. Married men with present spouses make the highest average income of about 61,000 dollars.</p>
+<pre><code>. test marstat_1 = marstat_2 = marstat_3 = marstat_4 = marstat
+&gt; _5 = 0
 
  ( 1)  marstat_1 - marstat_2 = 0
  ( 2)  marstat_1 - marstat_3 = 0
@@ -316,85 +498,138 @@ Linear regression                               Number of obs     =  1,105,144
  ( 4)  marstat_1 - marstat_5 = 0
  ( 5)  marstat_1 = 0
 
-       F(  5,1105138) =10882.47
+       F(  5,578716) = 9710.79
             Prob &gt; F =    0.0000
 
 </code></pre>
-<p>I can reject the null hypothesis that there is no relationship between marital status and income.</p>
-<pre><code>. //Should have read ahead and chosen a better reference category. Woops!
+<p>I can reject the null hypothesis that there is no relationship between marital status and income for men.</p>
+<pre><code>. //Should have read ahead and chosen a better reference categ
+&gt; ory. Woops!
 . gen marstat_6 = 0 if marst &lt; .
 
 . replace marstat_6 = 1 if marst==6
 (301,993 real changes made)
 
-. reg incwage marstat_2 marstat_3 marstat_4 marstat_5 marstat_6, robust
+. reg incwage marstat_2 marstat_3 marstat_4 marstat_5 marstat_
+&gt; 6 if female==0, robust
 
-Linear regression                               Number of obs     =  1,105,144
-                                                F(5, 1105138)     =   10882.47
-                                                Prob &gt; F          =     0.0000
-                                                R-squared         =     0.0364
-                                                Root MSE          =      48371
+Linear regression                               Number of obs 
+&gt;     =    578,722
+                                                F(5, 578716)  
+&gt;     =    9710.79
+                                                Prob &gt; F      
+&gt;     =     0.0000
+                                                R-squared     
+&gt;     =     0.0575
+                                                Root MSE      
+&gt;     =      56423
 
-------------------------------------------------------------------------------
+--------------------------------------------------------------
+&gt; ----------------
              |               Robust
-     incwage |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-   marstat_2 |  -14458.17   309.6354   -46.69   0.000    -15065.05    -13851.3
-   marstat_3 |  -16623.43   260.2302   -63.88   0.000    -17133.47   -16113.39
-   marstat_4 |   -8930.36   139.1328   -64.19   0.000    -9203.055   -8657.664
-   marstat_5 |  -14123.95   406.1805   -34.77   0.000    -14920.05   -13327.85
-   marstat_6 |  -21390.58   92.63189  -230.92   0.000    -21572.13   -21209.02
-       _cons |   49696.27   69.72141   712.78   0.000     49559.62    49832.92
-------------------------------------------------------------------------------
+     incwage |      Coef.   Std. Err.      t    P&gt;|t|     [95%
+&gt;  Con                                                        
+&gt;     f. Interval]
+-------------+------------------------------------------------
+&gt; ----------------
+   marstat_2 |  -22744.75    453.077   -50.20   0.000    -2363
+&gt; 2.77                                                        
+&gt;        -21856.74
+   marstat_3 |  -19990.35   518.3892   -38.56   0.000    -2100
+&gt; 6.38                                                        
+&gt;        -18974.32
+   marstat_4 |  -15300.05   240.6958   -63.57   0.000     -157
+&gt; 71.8                                                        
+&gt;        -14828.29
+   marstat_5 |  -15059.38   1098.083   -13.71   0.000    -1721
+&gt; 1.59                                                        
+&gt;        -12907.17
+   marstat_6 |   -31415.6   143.0997  -219.54   0.000    -3169
+&gt; 6.07                                                        
+&gt;        -31135.13
+       _cons |   61261.32    110.829   552.76   0.000      610
+&gt; 44.1                                                        
+&gt;         61478.54
+--------------------------------------------------------------
+&gt; ----------------
 
-. test marstat_2 = marstat_3 = marstat_4 = marstat_5 = marstat_6
+. test marstat_2 = marstat_3 = marstat_4 = marstat_5 = marstat
+&gt; _6
 
  ( 1)  marstat_2 - marstat_3 = 0
  ( 2)  marstat_2 - marstat_4 = 0
  ( 3)  marstat_2 - marstat_5 = 0
  ( 4)  marstat_2 - marstat_6 = 0
 
-       F(  4,1105138) = 2229.47
+       F(  4,578716) = 1364.77
             Prob &gt; F =    0.0000
 
 </code></pre>
-<p>I can also conclucd the difference in earnings between other categories of marital status and men who are married with present spouses are not equivalent. I cannot conclude that there are only two categoreis: married with spouse present and all other. There are multiple statistically distinct categories.</p>
+<p>I can also conclucd the difference in earnings between other categories of marital status and men who are married with present spouses are not equivalent. My null hypothesis was that there are only two categories (married with spouse present and all other), and I reject that. I conclude that there are multiple statistically distinct categories of marital status.</p>
 <h2><a href="#2-housing-price" id="2-housing-price">2. Housing price</a></h2>
 <pre><code>. use &quot;${datapath}houseprice.dta&quot;, clear
 
 . reg price sqrft, robust
 
-Linear regression                               Number of obs     =         88
-                                                F(1, 86)          =      51.19
-                                                Prob &gt; F          =     0.0000
-                                                R-squared         =     0.6208
-                                                Root MSE          =     63.617
+Linear regression                               Number of obs 
+&gt;     =         88
+                                                F(1, 86)      
+&gt;     =      51.19
+                                                Prob &gt; F      
+&gt;     =     0.0000
+                                                R-squared     
+&gt;     =     0.6208
+                                                Root MSE      
+&gt;     =     63.617
 
-------------------------------------------------------------------------------
+--------------------------------------------------------------
+&gt; ----------------
              |               Robust
-       price |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-       sqrft |    .140211   .0195978     7.15   0.000     .1012519      .17917
-       _cons |   11.20415   36.80591     0.30   0.762    -61.96359    84.37188
-------------------------------------------------------------------------------
+       price |      Coef.   Std. Err.      t    P&gt;|t|     [95%
+&gt;  Con                                                        
+&gt;     f. Interval]
+-------------+------------------------------------------------
+&gt; ----------------
+       sqrft |    .140211   .0195978     7.15   0.000     .101
+&gt; 2519                                                        
+&gt;           .17917
+       _cons |   11.20415   36.80591     0.30   0.762    -61.9
+&gt; 6359                                                        
+&gt;         84.37188
+--------------------------------------------------------------
+&gt; ----------------
 
 </code></pre>
-<p>This regression indicates that a home with 0 square feet would cost 11.204145 thousand dollars (not a particularly meaningful value here). The relationship between square feet and price indicates that a house with one more square foot is expected to cost .14021098 thousand odllars more.</p>
+<p>This regression indicates that a home with 0 square feet would cost 11.2 thousand dollars (not a particularly meaningful value here). The relationship between square feet and price indicates that, when comparing two houses, a house with one more square foot is expected to cost 140.2 dollars more.</p>
 <pre><code>. reg lprice lsqrft, robust
 
-Linear regression                               Number of obs     =         88
-                                                F(1, 86)          =      79.25
-                                                Prob &gt; F          =     0.0000
-                                                R-squared         =     0.5530
-                                                Root MSE          =     .20414
+Linear regression                               Number of obs 
+&gt;     =         88
+                                                F(1, 86)      
+&gt;     =      79.25
+                                                Prob &gt; F      
+&gt;     =     0.0000
+                                                R-squared     
+&gt;     =     0.5530
+                                                Root MSE      
+&gt;     =     .20414
 
-------------------------------------------------------------------------------
+--------------------------------------------------------------
+&gt; ----------------
              |               Robust
-      lprice |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-      lsqrft |   .8726595   .0980257     8.90   0.000     .6777909    1.067528
-       _cons |  -.9751299   .7446366    -1.31   0.194    -2.455418    .5051587
-------------------------------------------------------------------------------
+      lprice |      Coef.   Std. Err.      t    P&gt;|t|     [95%
+&gt;  Con                                                        
+&gt;     f. Interval]
+-------------+------------------------------------------------
+&gt; ----------------
+      lsqrft |   .8726595   .0980257     8.90   0.000     .677
+&gt; 7909                                                        
+&gt;         1.067528
+       _cons |  -.9751299   .7446366    -1.31   0.194    -2.45
+&gt; 5418                                                        
+&gt;         .5051587
+--------------------------------------------------------------
+&gt; ----------------
 
 . test lsqrft = 1
 
@@ -404,41 +639,84 @@ Linear regression                               Number of obs     =         88
             Prob &gt; F =    0.1974
 
 </code></pre>
-<p>Based on this regression, we can conclude that a 1% increase in square footage is associated with a 0.87% increase in price.</p>
+<p>Based on this regression, we can conclude that, when comparing two houses, a 1% increase in square footage is associated with a 0.87% increase in price.</p>
 <p>Based on this test, we cannot reject the null hypothesis that a 1% increase in square footage is associated with a 1% increase in price.</p>
 <pre><code>. reg price assess, robust
 
-Linear regression                               Number of obs     =         88
-                                                F(1, 86)          =     205.97
-                                                Prob &gt; F          =     0.0000
-                                                R-squared         =     0.8195
-                                                Root MSE          =     43.887
+Linear regression                               Number of obs 
+&gt;     =         88
+                                                F(1, 86)      
+&gt;     =     205.97
+                                                Prob &gt; F      
+&gt;     =     0.0000
+                                                R-squared     
+&gt;     =     0.8195
+                                                Root MSE      
+&gt;     =     43.887
 
-------------------------------------------------------------------------------
+--------------------------------------------------------------
+&gt; ----------------
              |               Robust
-       price |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-      assess |   .9755538   .0679752    14.35   0.000     .8404236    1.110684
-       _cons |  -14.47179   20.61722    -0.70   0.485    -55.45747     26.5139
-------------------------------------------------------------------------------
+       price |      Coef.   Std. Err.      t    P&gt;|t|     [95%
+&gt;  Con                                                        
+&gt;     f. Interval]
+-------------+------------------------------------------------
+&gt; ----------------
+      assess |   .9755538   .0679752    14.35   0.000     .840
+&gt; 4236                                                        
+&gt;         1.110684
+       _cons |  -14.47179   20.61722    -0.70   0.485    -55.4
+&gt; 5747                                                        
+&gt;          26.5139
+--------------------------------------------------------------
+&gt; ----------------
+
+. test assess = 1
+
+ ( 1)  assess = 1
+
+       F(  1,    86) =    0.13
+            Prob &gt; F =    0.7200
 
 </code></pre>
-<p>According to this regression, an additional thousand dollars in assdessed value is associated with an additional 976 dollars in price.</p>
+<p>According to this regression, an additional thousand dollars in assessed value is associated with an additional 976 dollars in price.</p>
 <pre><code>. reg lprice lassess, robust
 
-Linear regression                               Number of obs     =         88
-                                                F(1, 86)          =     225.97
-                                                Prob &gt; F          =     0.0000
-                                                R-squared         =     0.7656
-                                                Root MSE          =     .14782
+Linear regression                               Number of obs 
+&gt;     =         88
+                                                F(1, 86)      
+&gt;     =     225.97
+                                                Prob &gt; F      
+&gt;     =     0.0000
+                                                R-squared     
+&gt;     =     0.7656
+                                                Root MSE      
+&gt;     =     .14782
 
-------------------------------------------------------------------------------
+--------------------------------------------------------------
+&gt; ----------------
              |               Robust
-      lprice |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-     lassess |   1.013407    .067415    15.03   0.000     .8793904    1.147423
-       _cons |  -.1614743   .3897971    -0.41   0.680    -.9363653    .6134167
-------------------------------------------------------------------------------
+      lprice |      Coef.   Std. Err.      t    P&gt;|t|     [95%
+&gt;  Con                                                        
+&gt;     f. Interval]
+-------------+------------------------------------------------
+&gt; ----------------
+     lassess |   1.013407    .067415    15.03   0.000     .879
+&gt; 3904                                                        
+&gt;         1.147423
+       _cons |  -.1614743   .3897971    -0.41   0.680    -.936
+&gt; 3653                                                        
+&gt;         .6134167
+--------------------------------------------------------------
+&gt; ----------------
+
+. test lassess = 1
+
+ ( 1)  lassess = 1
+
+       F(  1,    86) =    0.04
+            Prob &gt; F =    0.8428
 
 </code></pre>
-<p>According to this regression, a 1% increase in assessed home value is associated with a 1.01% increased in home price</p>
+<p>According to this regression, a house with a 1% higher assessed home value is expected to cost 1.01% more.</p>
+<p>In order to determine whether assessors would be able to accurately determine the differences in values of homes, I tested whether the slope coefficient was equal to 1 in each of the preceding regressions. In the first regression, this means testing whether a house assessed as 1,000 dollars more will also cost 1000 dollars more. In the second (logged) regression, this tests whether a house assessed as 1% more will also cost 1% more. In both cases, I cannot reject the null hypothesis that assessors can determine the differences in values of houses.</p>
