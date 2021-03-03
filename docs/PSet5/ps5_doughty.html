@@ -1,0 +1,610 @@
+<head>
+  <link rel="stylesheet" type="text/css" href="stmarkdown.css">
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
+</script>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function() {
+    htmlTableOfContents();
+} );                        
+
+function htmlTableOfContents( documentRef ) {
+    var documentRef = documentRef || document;
+    var toc = documentRef.getElementById("toc");
+//  Use headings inside <article> only:
+//  var headings = [].slice.call(documentRef.body.querySelectorAll('article h1, article h2, article h3, article h4, article h5, article h6'));
+    var headings = [].slice.call(documentRef.body.querySelectorAll('h1, h2, h3, h4, h5, h6'));
+    headings.forEach(function (heading, index) {
+        var ref = "toc" + index;
+        if ( heading.hasAttribute( "id" ) ) 
+            ref = heading.getAttribute( "id" );
+        else
+            heading.setAttribute( "id", ref );
+
+        var link = documentRef.createElement( "a" );
+        link.setAttribute( "href", "#"+ ref );
+        link.textContent = heading.textContent;
+
+        var div = documentRef.createElement( "div" );
+        div.setAttribute( "class", heading.tagName.toLowerCase() );
+        div.appendChild( link );
+        toc.appendChild( div );
+    });
+}
+
+
+try {
+    module.exports = htmlTableOfContents;
+} catch (e) {
+    // module.exports is not defined
+}
+</script>
+</head>  
+<h1><a href="#pset-5" id="pset-5">PSet 5</a></h1>
+<p>Michelle Doughty<br />
+ECON 8848</p>
+<p>Began: 28 Feb 2021 Updated: 4 Mar 2021</p>
+<p>Collaborators: Hannah Denker, Dan Mangan</p>
+<h2><a href="#potential-outcomes-framework" id="potential-outcomes-framework">Potential outcomes framework</a></h2>
+<pre><code>. clear 
+
+. set seed 12345
+
+. set obs 100000
+number of observations (_N) was 0, now 100,000
+
+. 
+. gen y0 = rnormal(50, 25)
+
+. gen y1 = y0 + rnormal(5, 4)
+
+. gen effect = y1 - y0
+
+. su effect 
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+      effect |    100,000    5.012338    4.011236  -14.22808   22.73228
+
+. loc trueate = `r(mean)'
+
+</code></pre>
+<p>If I could observe the potential outcomes of each person having taken prelims once or twice, I could simply compare those two outcomes to find the causal effect of taking prelims twice.</p>
+<p>In this example, comparing the treated and untreated conditions leads to the conclusion that treatment causes a 5.01-unit (scale unknown) increase in knowledge of micro. This is expected, as the data were generated such that the potential outcome if the exam is taken twice will be on average 5 units higher than the potential outcome in the untreated case.</p>
+<pre><code>. gen treated = runiformint(0,1)
+
+. gen yobs = y0 if treated==0 
+(49,910 missing values generated)
+
+. replace yobs = y1 if treated==1
+(49,910 real changes made)
+
+. regress yobs treated, robust
+
+Linear regression                               Number of obs     =    100,000
+                                                F(1, 99998)       =     977.58
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.0097
+                                                Root MSE          =     25.144
+
+------------------------------------------------------------------------------
+             |               Robust
+        yobs |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     treated |   4.972221   .1590282    31.27   0.000     4.660528    5.283915
+       _cons |   50.04649   .1116531   448.23   0.000     49.82765    50.26532
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>This regression coefficient is incredibly close to the true average treatment effect: both represent a causal effect of about 5 units (points?).</p>
+<p><strong>Selection bias</strong></p>
+<pre><code>. gen firstprelim = y0 + rnormal(0, 4)
+
+. gen treated_sel = 0
+
+. replace treated_sel = 1 if firstprelim &lt; 45
+(42,128 real changes made)
+
+. su y0 if treated_sel == 0
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+          y0 |     57,872    66.71201    16.29846   32.68355   163.8859
+
+. loc y0_t0 = `r(mean)'
+
+. su y0 if treated_sel == 1
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+          y0 |     42,128    27.12747    14.54748  -60.44527   61.70338
+
+. loc y0_t1 = `r(mean)'
+
+. loc sel_bias = `y0_t1' - `y0_t0'
+
+. 
+. gen yobs_sel = y0 if treated_sel == 0
+(42,128 missing values generated)
+
+. replace yobs_sel = y1 if treated_sel==1
+(42,128 real changes made)
+
+. regress yobs_sel treated_sel, robust
+
+Linear regression                               Number of obs     =    100,000
+                                                F(1, 99998)       &gt;   99999.00
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.5383
+                                                Root MSE          =     15.801
+
+------------------------------------------------------------------------------
+             |               Robust
+    yobs_sel |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+ treated_sel |   -34.5558   .0999805  -345.63   0.000    -34.75176   -34.35984
+       _cons |   66.71201   .0677506   984.67   0.000     66.57922     66.8448
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>The selection bias is strong and negative: the potential untreated outcomes differ significantly between the treated and untreated groups, because the groups are selected on the basis of a test outcome that depends (with some measurement error) on the untreated outcome. Specifically, the selection bias should be the difference between average untreated outcomes of the treated group and average untreated outcomes of the untreated group, or -39.58 units. This value is negative because the people with less knowledge of micro are more likely to be assigned to treatment and less likely to score well on any outcomes. In this case, regressions did show that the selection bias made the treatment &ldquo;effect&rdquo; seem 39.57 points lower than the true effect.</p>
+<p><strong>ATE vs. TOT</strong></p>
+<pre><code>. gen cost = rnormal(-5,4)
+
+. gen treated_endo = 0 //bad naming: makes me think of endometriosis treatment
+
+. replace treated_endo = 1 if (effect + cost)&gt;0
+(50,119 real changes made)
+
+. gen yobs_endo = y1 if treated_endo == 1
+(49,881 missing values generated)
+
+. replace yobs_endo = y0 if treated_endo == 0 
+(49,881 real changes made)
+
+. regress yobs_endo treated_endo, robust
+
+Linear regression                               Number of obs     =    100,000
+                                                F(1, 99998)       =    1963.97
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.0193
+                                                Root MSE          =     25.108
+
+------------------------------------------------------------------------------
+             |               Robust
+   yobs_endo |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+treated_endo |   7.037353   .1587967    44.32   0.000     6.726113    7.348592
+       _cons |    50.1479   .1118564   448.32   0.000     49.92866    50.36713
+------------------------------------------------------------------------------
+
+. loc effect_est = _b[treated_endo]
+
+. su effect if treated_endo==1
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+      effect |     50,119    7.260948     3.31311  -7.474464   22.73228
+
+</code></pre>
+<p>This assignment mechanism does not create selection bias, because selection bias is defined as differences in the potential untreated outcomes between the treated and untreated groups. The &ldquo;selection&rdquo; into groups here takes place not based on potential untreated outcomes but on potential treated outcomes.</p>
+<p>While the effect found by this selection mechanism is not an average treatment effect, it is a valid causal estimation for the treated group. In this case, the regression shows that the treatment causes a 7.04-unit increase in microeconomics knowledge.</p>
+<p>Due to our magical knowledge of everyone&rsquo;s potential outcomes, we can see that this estimate is very similar to the true average causal effect for the treatment group.</p>
+<h2><a href="#omitted-variable-bias" id="omitted-variable-bias">Omitted variable bias</a></h2>
+<pre><code>. clear all 
+
+. use &quot;${datapath}schoolexp.dta&quot;
+
+. regress read4 exppp, robust
+
+Linear regression                               Number of obs     =      1,823
+                                                F(1, 1821)        =       1.44
+                                                Prob &gt; F          =     0.2302
+                                                R-squared         =     0.0010
+                                                Root MSE          =     19.143
+
+------------------------------------------------------------------------------
+             |               Robust
+       read4 |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       exppp |  -.0005458   .0004547    -1.20   0.230    -.0014377    .0003461
+       _cons |   62.89736   2.333356    26.96   0.000     58.32103     67.4737
+------------------------------------------------------------------------------
+
+. loc orig = _b[exppp]
+
+</code></pre>
+<p>This regression indicates that a school spending an additional 1,000 dollars per pupil would be expected to have 0.55 percentage points less of their 4th grade students rated satisfactory in reading.</p>
+<p>If I were to include &ldquo;lunch&rdquo; as a variable in the above regression representing students eligible for free- or reduced-price lunch (FRPL), I would expect a negative association between that variable and student performance. Our education system is deeply flawed and tends to give better education to the privileged. Schools serving poorer students (meaning more students eligible for FRPL) are more likely to also have lower test scores.</p>
+<p>The other relevant association between FRPL and per-pupil expenditure (PPE) is slightly less certain. On one hand, poorer districts have a weaker property tax base from which to draw their budgets. On the other hand, we have specific programs meant to make up for that gap and give additional money to poorer schools. Let&rsquo;s assume that these programs are sufficiently robust, and poorer districts (higher FRPL) also have more money to spend on their students (higher PPE). If this is true, the coefficient on per-pupil expenditure presented in the prior regression was negatively biased (meaning the true coefficient should be higher).</p>
+<p>(I may have made that assumption specifically because I already think the coefficient was negatively biased. All apologies to Hanushek, but I expect a positive association between spending and test scores.)</p>
+<pre><code>. regress read4 exppp lunch, robust
+
+Linear regression                               Number of obs     =      1,823
+                                                F(2, 1820)        =     423.22
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.3868
+                                                Root MSE          =     15.002
+
+------------------------------------------------------------------------------
+             |               Robust
+       read4 |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       exppp |    .002063   .0003702     5.57   0.000      .001337     .002789
+       lunch |  -.4629633    .015944   -29.04   0.000    -.4942337   -.4316928
+       _cons |   67.51695   1.858993    36.32   0.000     63.87096    71.16293
+------------------------------------------------------------------------------
+
+. loc ovb_comp = `orig' - _b[exppp]
+
+. loc beta2 = _b[lunch]
+
+</code></pre>
+<p>The coefficient behaved as expected: with the negative bias removed, the coefficient on PPE has increased and now is positive. It appears that my guess was right, and school-level PPE and FRPL are positively associated in these data.</p>
+<p>By comparing the regressions, I would estimate that the omitted variable bias is -0.00261 percentage points.</p>
+<pre><code>. regress lunch exppp, robust
+
+Linear regression                               Number of obs     =      1,823
+                                                F(1, 1821)        =      86.79
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.0543
+                                                Root MSE          =     25.697
+
+------------------------------------------------------------------------------
+             |               Robust
+       lunch |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       exppp |   .0056351   .0006049     9.32   0.000     .0044488    .0068214
+       _cons |   9.978296   3.076174     3.24   0.001     3.945096     16.0115
+------------------------------------------------------------------------------
+
+. loc ovb_form = `beta2'*_b[expp]
+
+</code></pre>
+<p>Using the formula, the omitted variable bias can be calculated as -0.00261 percentage points. This lines up with the observed change in the coefficient when the omitted variable was included</p>
+<p><strong>FWL</strong></p>
+<pre><code>. reg read4 lunch
+
+      Source |       SS           df       MS      Number of obs   =     1,823
+-------------+----------------------------------   F(1, 1821)      =   1086.66
+       Model |  249639.691         1  249639.691   Prob &gt; F        =    0.0000
+    Residual |  418339.731     1,821   229.73077   R-squared       =    0.3737
+-------------+----------------------------------   Adj R-squared   =    0.3734
+       Total |  667979.422     1,822  366.618783   Root MSE        =    15.157
+
+------------------------------------------------------------------------------
+       read4 |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       lunch |  -.4431021   .0134418   -32.96   0.000     -.469465   -.4167392
+       _cons |   77.45448   .6359212   121.80   0.000     76.20726    78.70169
+------------------------------------------------------------------------------
+
+. predict read4resid, resid
+
+. 
+. reg exppp lunch
+
+      Source |       SS           df       MS      Number of obs   =     1,823
+-------------+----------------------------------   F(1, 1821)      =    104.46
+       Model |   117844542         1   117844542   Prob &gt; F        =    0.0000
+    Residual |  2.0544e+09     1,821  1128163.41   R-squared       =    0.0543
+-------------+----------------------------------   Adj R-squared   =    0.0537
+       Total |  2.1722e+09     1,822  1192222.89   Root MSE        =    1062.2
+
+------------------------------------------------------------------------------
+       exppp |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       lunch |   9.627238   .9419611    10.22   0.000       7.7798    11.47468
+       _cons |   4816.978   44.56354   108.09   0.000     4729.577    4904.379
+------------------------------------------------------------------------------
+
+. predict expppresid, resid
+
+. 
+. reg read4resid expppresid
+
+      Source |       SS           df       MS      Number of obs   =     1,823
+-------------+----------------------------------   F(1, 1821)      =     38.87
+       Model |  8743.58554         1  8743.58554   Prob &gt; F        =    0.0000
+    Residual |  409596.145     1,821  224.929239   R-squared       =    0.0209
+-------------+----------------------------------   Adj R-squared   =    0.0204
+       Total |   418339.73     1,822  229.604682   Root MSE        =    14.998
+
+------------------------------------------------------------------------------
+  read4resid |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  expppresid |    .002063   .0003309     6.23   0.000     .0014141     .002712
+       _cons |   7.91e-09   .3512607     0.00   1.000    -.6889163    .6889163
+------------------------------------------------------------------------------
+
+. 
+</code></pre>
+<p>The eventual coefficient on the residual regression is the same as the multivariate regression performed above</p>
+<pre><code>. twoway (scatter read4 lunch) (lfit read4 lunch), ///
+&gt;         ytitle(&quot;% Satisfactory reading level, 4th Grade&quot;) ///
+&gt;         xtitle(&quot;% Eligible for free or reduced-price lunch (FRPL)&quot;) ///
+&gt;         title(&quot;Reading level and FRPL&quot;) ///
+&gt;         legend(off) ///
+&gt;         name(&quot;read_lunch&quot;, replace)
+
+. 
+. replace exppp = exppp/1000
+
+. twoway (scatter exppp lunch) (lfit exppp lunch), ///
+&gt;         ytitle(&quot;Per-Pupil Expenditure (PPE) ($1000s)&quot;) ///
+&gt;         xtitle(&quot;% Eligible for free or reduced-price lunch (FRPL)&quot;) ///
+&gt;         title(&quot;PPE and FRPL&quot;) ///
+&gt;         legend(off) ///
+&gt;         name(&quot;ppe_lunch&quot;, replace)
+
+. 
+. graph combine read_lunch ppe_lunch
+
+. 
+</code></pre>
+<img src="fwl.svg" height="400" >
+<p>These scatter plots show our outcome (reading proficiency) and predictor (PPE) of interest, each predicted by the additional covariate (FRPL). By finding the residuals of each of these graphs, we are able to compare the amount of variation that is <em>not</em> accounted for, even after including the influence of FRPL percentage. For example, a school might have a positive residual in the regression of reading proficiency on FRPL, indicating that the school is performing better than would be expected on 4th grade reading test scores based on FRPL percentage. This school will also have a predicted value of PPE, and if that residual is positive as well, that indicates that the school is spending more than would be expected based on the school&rsquo;s FRPL percentage. By considering the two residuals together, we can see whether reading test scores (after accounting for FRPL) are associated with PPE (after accounting for FRPL).</p>
+<p>I would not feel justified in applying the conditional independence assumption to this particular regression. There are too many possible ommitted variables. For example, consider the state of a given school. States that prioritize education could plausibly authorize more funding (hence, higher PPE) and put into place other programs and systems designed to increase student achievement (hence, higher test scores). This would positively bias our regression, making it seem as though PPE has a more positive association with student achievement than the reality. Another set of possible ommitted variables describe the racial breakdown of schools. The history (and, frankly, present) of segregation ensures that schools in neighborhoods with more White students are more likely to have a larger property tax base, which increase the amount a school is able to spend on each student. Additionally, our school system advantages White students in many ways (exclusionary pedagogy, discriminatory discipline, and a predominantly White teaching force, to name a few). The ommission of racial breakdown from consideration thus also positively biases our regression. Therefore, we cannot interpret this regression causally.</p>
+<h2><a href="#signing-the-bias" id="signing-the-bias">Signing the bias</a></h2>
+<p><em>Regression of birthweight on mother&rsquo;s daily smoking</em></p>
+<p>An omitted variable here could be the mother&rsquo;s level of drinking. Women who drink alcohol are more likely to smoke. Drinking alcohol during pregnancy is associated with a lower birthweight. Therefore, the bias from this ommitted variable would be negative.</p>
+<p><em>Regression of patient’s subjective health on health insurance coverage</em></p>
+<p>One omitted variable in this regression could be patient age. Younger patients are less likely to have health insurance (due to both generational wealth gaps and lower risk of serious medical issues). Younger patients are also more likely to feel as though they are healthy. This omitted variable bias would thus be negative.</p>
+<p><em>Regression of age at which a young woman becomes sexually active on whether she eats breakfast in the morning</em></p>
+<p>Honestly, for this one, the burden is on you to first come up with a plausible causal mechanism. But I suppose extreme poverty could be a possible ommitted variable. Young people living in poverty are more likely to be exposed to food insecurity, which would decrease the likelihood that someone would eat breakfast. Poverty also means that someone is less likely to have access to quality sex ed, which means that a young woman in poverty may not be fully aware of the risks of early sexual activity (which often comes with less reliable contraceptive use) and may begin sexual activity at a younger age. This ommitted variable bias would thus be positive.</p>
+<p>Interestingly, no one ever asks me about what correlates with a young man&rsquo;s sexual activity.</p>
+<h2><a href="#matching" id="matching">Matching</a></h2>
+<pre><code>. clear all 
+
+. use &quot;${datapath}matching_ps5.dta&quot;
+
+. gen true_effect = y1 - y0
+
+. su true_effect if female==0
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+ true_effect |      2,445          10    6.49e-07   9.999999         10
+
+. su true_effect if female==1
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+ true_effect |      2,555           5    7.12e-08          5          5
+
+. su true_effect
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+ true_effect |      5,000       7.445    2.499645          5         10
+
+</code></pre>
+<p>The true effect for women is 5, for men is 10, and for this sample overall 7.445.</p>
+<pre><code>. tab female treated, row
+
++----------------+
+| Key            |
+|----------------|
+|   frequency    |
+| row percentage |
++----------------+
+
+           |        treated
+    female |         0          1 |     Total
+-----------+----------------------+----------
+         0 |       625      1,820 |     2,445 
+           |     25.56      74.44 |    100.00 
+-----------+----------------------+----------
+         1 |     1,884        671 |     2,555 
+           |     73.74      26.26 |    100.00 
+-----------+----------------------+----------
+     Total |     2,509      2,491 |     5,000 
+           |     50.18      49.82 |    100.00 
+
+. bysort female: su y0
+
+--------------------------------------------------------------------------------------------
+-&gt; female = 0
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+          y0 |      2,445    10.02004     1.98157   3.185875   18.62902
+
+--------------------------------------------------------------------------------------------
+-&gt; female = 1
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+          y0 |      2,555   -.0022972    2.056391  -7.606311   6.652541
+
+
+. bysort treated: su y0
+
+--------------------------------------------------------------------------------------------
+-&gt; treated = 0
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+          y0 |      2,509    2.490117    4.797912  -7.606311   15.45047
+
+--------------------------------------------------------------------------------------------
+-&gt; treated = 1
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+          y0 |      2,491    7.324542     4.86554  -6.783313   18.62902
+
+
+</code></pre>
+<p>About 74% of men received the treatment, while about 26% of women did. This assignment mechanism did create selection bias. The potential untreated outcomes for men and women differ systematically, so selecting disproportionately based on sex resulted in the treated and untreated groups having different potential untreated outcomes.</p>
+<pre><code>. reg yobs treated, robust 
+
+Linear regression                               Number of obs     =      5,000
+                                                F(1, 4998)        =    6368.41
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.5609
+                                                Root MSE          =     5.9678
+
+------------------------------------------------------------------------------
+             |               Robust
+        yobs |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     treated |   13.48758   .1690124    79.80   0.000     13.15624    13.81891
+       _cons |   2.490117   .0957861    26.00   0.000     2.302334      2.6779
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>This regression does not identify a causal effect due to the selection bias identified above.</p>
+<pre><code>. bysort female: reg yobs treated, robust 
+
+--------------------------------------------------------------------------------------------
+-&gt; female = 0
+
+Linear regression                               Number of obs     =      2,445
+                                                F(1, 2443)        =   12042.03
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.8290
+                                                Root MSE          =      1.982
+
+------------------------------------------------------------------------------
+             |               Robust
+        yobs |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     treated |   10.00179   .0911439   109.74   0.000     9.823063    10.18052
+       _cons |   10.01871   .0782983   127.96   0.000     9.865173    10.17225
+------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------
+-&gt; female = 1
+
+Linear regression                               Number of obs     =      2,555
+                                                F(1, 2553)        =    3087.68
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.5358
+                                                Root MSE          =     2.0568
+
+------------------------------------------------------------------------------
+             |               Robust
+        yobs |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     treated |   5.019529   .0903331    55.57   0.000     4.842395    5.196663
+       _cons |  -.0074259   .0479795    -0.15   0.877    -.1015085    .0866567
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>These regressions do have a causal interpretation. The treatment is randomly assigned conditional on sex, so the treatment and control groups within each individual regression are comparable. The coefficients match the true ATEs calculated above.</p>
+<pre><code>. gen treat_fem = treated * female
+
+. reg yobs female treated treat_fem, robust 
+
+Linear regression                               Number of obs     =      5,000
+                                                F(3, 4996)        =   31199.45
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.9497
+                                                Root MSE          =     2.0205
+
+------------------------------------------------------------------------------
+             |               Robust
+        yobs |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      female |  -10.02614   .0918291  -109.18   0.000    -10.20616   -9.846111
+     treated |   10.00179   .0911431   109.74   0.000      9.82311    10.18047
+   treat_fem |  -4.982261   .1283249   -38.83   0.000    -5.233835   -4.730688
+       _cons |   10.01871   .0782976   127.96   0.000     9.865213    10.17221
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>The coefficient on &ldquo;female&rdquo; indicates that untreated women are on average 10 units lower on the undefined outcome variable than untreated men. The coefficient on &ldquo;treated&rdquo; indicates that treated men are on average 10 points higher than untreated men (the ATE for men). The coefficient on &ldquo;treat_fem&rdquo; indicates that treated women are on average 5 points lower than treated men. The ATE for women compares treated women to untreated women (-10 relative to untreated men) to treated women (-5 relative to untreated men): a causal effect of 5 units.</p>
+<p>To find the ATE for the sample, you could find the weighted average of the sex-specific treatment effects given above based on the average in the sample. To find the TOT, you could find the weighted average of the same sex-specific treatment effects, weighted by the sexes in the treated group.</p>
+<pre><code>. reg yobs female treated, robust 
+
+Linear regression                               Number of obs     =      5,000
+                                                F(2, 4997)        =   41180.13
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.9350
+                                                Root MSE          =     2.2963
+
+------------------------------------------------------------------------------
+             |               Robust
+        yobs |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      female |  -12.57164    .082822  -151.79   0.000      -12.734   -12.40927
+     treated |   7.433993   .0828201    89.76   0.000     7.271629    7.596357
+       _cons |   11.93012   .0826656   144.32   0.000     11.76806    12.09218
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>This regression describes the causal effect of the treatment on the sample population (ATE). We know that the conditional independence assumption holds because women and men were separately randomized into treatment or control. We have assumed that the treatment has a constant effect for men and women (an assumption that we know holds true in this case). We must assume all of our predictors have linear effects: but since both are binary, this assumptions holds. Finally, we must assume that the individual-specific heterogeneity is independent of treatment, additive, and consistent.</p>
+<pre><code>. psmatch2 treated female, outcome(yobs) radius caliper(0.5) ate 
+
+Probit regression                               Number of obs     =      5,000
+                                                LR chi2(1)        =    1209.54
+                                                Prob &gt; chi2       =     0.0000
+Log likelihood =  -2860.933                     Pseudo R2         =     0.1745
+
+------------------------------------------------------------------------------
+     treated |      Coef.   Std. Err.      z    P&gt;|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      female |  -1.292178   .0382861   -33.75   0.000    -1.367218   -1.217139
+       _cons |   .6568965   .0274378    23.94   0.000     .6031194    .7106736
+------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+        Variable     Sample |    Treated     Controls   Difference         S.E.   T-stat
+----------------------------+-----------------------------------------------------------
+            yobs  Unmatched | 15.9776929   2.49011711   13.4875758   .168796854    79.90
+                        ATT | 15.9776929   2.49011711   13.4875758   .169012435    79.80
+                        ATU | 2.49011711   15.9776929   13.4875758            .        .
+                        ATE |                           13.4875758            .        .
+----------------------------+-----------------------------------------------------------
+Note: S.E. does not take into account that the propensity score is estimated.
+
+           | psmatch2:
+ psmatch2: |   Common
+ Treatment |  support
+assignment | On suppor |     Total
+-----------+-----------+----------
+ Untreated |     2,509 |     2,509 
+   Treated |     2,491 |     2,491 
+-----------+-----------+----------
+     Total |     5,000 |     5,000 
+
+</code></pre>
+<p>This specification finds a treatment effect of 13.5, equivalent to a simple regression of yobs on treated. Because of the sex breakdown of the treatment, the propensity for men to be treated is about 0.74 and for women is about 0.26. These values are within the caliper range of 0.5, so all observations are used as a comparison group. This does not account for the gender-based selection mechanism in any way and thus gives a biased estimate.</p>
+<pre><code>. psmatch2 treated female, outcome(yobs) radius caliper(0.1) ate 
+
+Probit regression                               Number of obs     =      5,000
+                                                LR chi2(1)        =    1209.54
+                                                Prob &gt; chi2       =     0.0000
+Log likelihood =  -2860.933                     Pseudo R2         =     0.1745
+
+------------------------------------------------------------------------------
+     treated |      Coef.   Std. Err.      z    P&gt;|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      female |  -1.292178   .0382861   -33.75   0.000    -1.367218   -1.217139
+       _cons |   .6568965   .0274378    23.94   0.000     .6031194    .7106736
+------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+        Variable     Sample |    Treated     Controls   Difference         S.E.   T-stat
+----------------------------+-----------------------------------------------------------
+            yobs  Unmatched | 15.9776929   2.49011711   13.4875758   .168796854    79.90
+                        ATT | 15.9776929   7.31797302   8.65971992   .199846148    43.33
+                        ATU | 2.49011711   8.75074343   6.26062633            .        .
+                        ATE |                           7.45585476            .        .
+----------------------------+-----------------------------------------------------------
+Note: S.E. does not take into account that the propensity score is estimated.
+
+           | psmatch2:
+ psmatch2: |   Common
+ Treatment |  support
+assignment | On suppor |     Total
+-----------+-----------+----------
+ Untreated |     2,509 |     2,509 
+   Treated |     2,491 |     2,491 
+-----------+-----------+----------
+     Total |     5,000 |     5,000 
+
+</code></pre>
+<p>This regression yields estimates that better match our understanding of the true causal effect: 8.66 units for TOT, and 7.46 for ATE. The smaller bandwidth ensures that men&rsquo;s observations are only matched with other men&rsquo;s observations, and women&rsquo;s only with other women: given our understanding of the true DGP, this is the best way to approximate the real counterfactual.</p>
