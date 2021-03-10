@@ -47,8 +47,8 @@ try {
 <p>Michelle Doughty<br />
 ECON 8848</p>
 <p>Began: 4 Mar 2021<br />
-Updated:</p>
-<p>Collaborators:</p>
+Updated: 10 Mar 2021</p>
+<p>Collaborators: Hannah Denker</p>
 <h2><a href="#preparing-for-analysis" id="preparing-for-analysis">Preparing for analysis</a></h2>
 <p><strong>IDs and Time</strong></p>
 <pre><code>. use &quot;${datapath}davishousing.dta&quot;, clear
@@ -510,7 +510,7 @@ Linear regression                               Number of obs     =      6,178
 ------------------------------------------------------------------------------
 
 </code></pre>
-<p>Based on this, I cannot reject the null hypothesis that square footage varies between Churchill and Lyon counties before 1999. However, there appear to be significant differences in sales prices, acres of land, age of house, and class of house between the two counties in the pre period. This analysis is a useful way to understand the way the treatment and comparison counties differ in the pre-period.</p>
+<p>Based on this, I cannot reject the null hypothesis that square footage varies between Churchill and Lyon counties before 1999. However, there appear to be significant differences in sales prices, acres of land, age of house, and class of house between the two counties in the pre period. Ultimately, we are trying to provide evidence about the assumption that the change in housing prices in Lyon county is a valid counterfactual for the change in housing prices that would have occurred in Churchill without the leukemia cluster. Establishing the similarities between Churchill and Lyons in the pre period is a key part of making that assumption believable.</p>
 <pre><code>. foreach var in acres sqft age origclass {
   2.         di in red &quot;Does '`var'' vary between CC &amp; LC pre- and post-2000?&quot;
   3.         reg `var' cc after cc_after, robust
@@ -585,7 +585,7 @@ Linear regression                               Number of obs     =     10,204
 ------------------------------------------------------------------------------
 
 </code></pre>
-<p>All four control variables (acrage, square footage, age, and class) have statistically significantly different trends between pre- and post-2000 between Churchill and Lyons counties. This means that the difference between pre-2000 and post-2000 predicted values in our regression vary significantly by county. Therefore, without these controls, the equal trends assumption would not be met: we could not assume that there would be no different trends in housing prices between the counties without the leukemia risk changing, because the different trends in housing characteristics (associated with price) could be causing different trends in prices regardless of the leukemia risk.</p>
+<p>All four control variables (acrage, square footage, age, and class) have statistically significantly different trends between pre- and post-2000 between Churchill and Lyons counties. This means that the difference between pre-2000 and post-2000 predicted values in our regression vary significantly by county. Therefore, without these controls, the equal counterfactual trends assumption would not be met: we could not assume that there would be no different trends in housing prices between the counties without the leukemia risk changing, because the different trends in characteristics of sold houses could be causing different trends in prices regardless of the leukemia risk.</p>
 <h2><a href="#main-analysis" id="main-analysis">Main analysis</a></h2>
 <p><strong>Table 2 results extended</strong></p>
 <pre><code>. reg logrealsales after cc cc_after, robust 
@@ -607,7 +607,7 @@ logrealsales |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval
 ------------------------------------------------------------------------------
 
 </code></pre>
-<p>The coefficient on after, 0.039, indicates that housing prices in Lyons County were on average 0.040% higher after January 2000. The coefficient on the Churchill County dummy, -0.040, indicates that housing prices before January 2000 were on average 0.039% lower in Churchill County than Lyons county. Finally, the coefficient on cc_after, -0.077, indicates that the <em>change</em> in housing prices after January 2000 was 0.074% lower in Churchill County than in Lyons County.</p>
+<p>The coefficient on after, 0.039, indicates that housing prices in Lyons County were on average 0.040% higher after January 2000. The coefficient on the Churchill County dummy, -0.040, indicates that housing prices before January 2000 were on average 0.039% lower in Churchill County than Lyons county. Finally, the coefficient on cc_after, -0.077, indicates that the <em>change</em> in housing prices after January 2000 was 0.074% lower in Churchill County than in Lyons County. All of these coefficients are statistically significant.</p>
 <pre><code>. forvalues yr = 1991/2002 {
   2.         cap drop yr_`yr'
   3.         gen yr_`yr' = year==`yr'
@@ -643,7 +643,7 @@ logrealsales |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval
 ------------------------------------------------------------------------------
 
 </code></pre>
-<p>This model specifies time as a series of year dummies rather than a single binary indication of before/after January 2000. This relaxes the assumption that there is a single before/after difference in time, and allows housing prices to change dynamically with each year.</p>
+<p>This model specifies time as a series of year dummies rather than a single binary indication of before/after January 2000. This relaxes the assumption that there is a single before/after difference in time (meaning a single level &ldquo;before&rdquo; and a single level &ldquo;after&rdquo;), and allows housing prices to change dynamically with each year.</p>
 <pre><code>. reg logrealsales cc cc_after yr_* after, robust 
 note: yr_2000 omitted because of collinearity
 
@@ -707,7 +707,7 @@ logrealsales |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval
 ------------------------------------------------------------------------------
 
 </code></pre>
-<p>The coefficient on &ldquo;spline&rdquo;, -0.105, indicates that the change in housing prices from pre-2000 to 2002 is 0.100% lower in Churchill County.</p>
+<p>The coefficient on &ldquo;spline&rdquo;, -0.105, indicates that the change in housing prices from pre-2000 to 2002 is 0.100% lower in Churchill County than in Lyons county.</p>
 <p>It seems like the difference between the coefficient when using &ldquo;spline&rdquo; and the coefficient when using the after-cc interaction can only be due to different specifications of the treatment. The specification of time is the same, and a one-unit change in the X variable means the same thing. However, the spline allows that change to occur gradually and strengthen over time, while the single interaction term assumes a one-time treatment change in January 2000.</p>
 <p><strong>Table 3 results extended</strong></p>
 <pre><code>. forvalues i = 2/12 {
@@ -761,8 +761,8 @@ logrealsales |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval
 ------------------------------------------------------------------------------
 
 </code></pre>
-<p>Including month dummies allows for us to control for the effects of seasonal variation in home buying on home prices. If housing prices change across the years, and houses in different counties tend to be sold at different times, this can remove a possible source of confounding variation. Even if houses in different counties are sold in roughly the same months in the pre- and post-period, the association between month and home prices can increase the precision of our estimates.</p>
-<p>The inclusion of these new variables pushed the coefficient on spline slightly lower (farther from zero). This means that all the previously ommitted variables (month dummies, acrage, square footage, and age) had an overall small positive ommitted variable bias. However, this is not enough information to tell us the sign of bias from each individual variable that had been previously ommitted.</p>
+<p>Including month dummies allows for us to control for the effects of seasonal variation in home buying on home prices. If housing prices change across months, and houses in different counties tend to be sold at different times, this can remove a possible source of confounding variation. Even if houses in different counties are sold in roughly the same months in the pre- and post-period, the association between month and home prices can increase the precision of our estimates.</p>
+<p>The inclusion of these new variables pushed the coefficient on spline slightly higher (closer to zero). This means that all the previously ommitted variables (month dummies, acrage, square footage, and age) had an overall small negative ommitted variable bias. However, this is not enough information to tell us the sign of bias from each individual variable that had been previously ommitted.</p>
 <pre><code>. reg logrealsales cc spline yr_* month_* acres acres2 sqft age age2 origclass, robust 
 
 Linear regression                               Number of obs     =     10,204
@@ -826,6 +826,13 @@ logrealsales |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval
      class40 |     10,204      .00539    .0732224          0          1
      class45 |     10,204     .002352    .0484429          0          1
 
+.         //note that class05 isn't made right: it was mistakenly given a value of 0 all the
+&gt;  time
+.         //I'm fixing it here, but it also isn't necessary because you can choose class05 a
+&gt; s the ommitted variable (and all the other class dummies look right) 
+. replace class05 = 1 if origclass &lt; 1
+(435 real changes made)
+
 . reg logrealsales cc spline yr_* month_* acres acres2 sqft age age2 class10 class15 class20
 &gt;  class25 class30 class35 class40 class45, robust 
 
@@ -880,8 +887,6 @@ logrealsales |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval
        _cons |   10.94438   .0277425   394.50   0.000        10.89    10.99876
 ------------------------------------------------------------------------------
 
-.         //ommitted class05 because it had no variation (literally no houses were class05)
-.         //then ommitted class10 as the comparison category
 </code></pre>
 <p>I&rsquo;m having trouble with this regression. It seems like class05 shows no variation (no one is class05), so it should be excluded <em>in addition to</em> another comparison category. However, if I exclude class05, the regression runs without exclude anyone else. But if I include class05 and exclude a different category, the regression excludes class05 and the coefficient on &ldquo;spline&rdquo; changes. I&rsquo;ve stuck with this regression because it mostly closely replicates the results in table 3, but I&rsquo;m not sure what&rsquo;s happening.</p>
 <pre><code>. levelsof date 
