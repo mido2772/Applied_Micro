@@ -607,7 +607,7 @@ logrealsales |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval
 ------------------------------------------------------------------------------
 
 </code></pre>
-<p>The coefficient on after, 0.039, indicates that housing prices in Lyons County were on average 0.040% higher after January 2000. The coefficient on the Churchill County dummy, -0.040, indicates that housing prices before January 2000 were on average 0.039% lower in Churchill County than Lyons county. Finally, the coefficient on cc_after, -0.077, indicates that the <em>change</em> in housing prices after January 2000 was 0.074% lower in Churchill County than in Lyons County. All of these coefficients are statistically significant.</p>
+<p>The coefficient on after, 0.039, indicates that housing prices in Lyons County were on average 4.02% higher after January 2000. The coefficient on the Churchill County dummy, -0.040, indicates that housing prices before January 2000 were on average 3.92% lower in Churchill County than Lyons county. Finally, the coefficient on cc_after, -0.077, indicates that the <em>change</em> in housing prices after January 2000 was 7.44% lower in Churchill County than in Lyons County. All of these coefficients are statistically significant.</p>
 <pre><code>. forvalues yr = 1991/2002 {
   2.         cap drop yr_`yr'
   3.         gen yr_`yr' = year==`yr'
@@ -707,7 +707,7 @@ logrealsales |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval
 ------------------------------------------------------------------------------
 
 </code></pre>
-<p>The coefficient on &ldquo;spline&rdquo;, -0.105, indicates that the change in housing prices from pre-2000 to 2002 is 0.100% lower in Churchill County than in Lyons county.</p>
+<p>The coefficient on &ldquo;spline&rdquo;, -0.105, indicates that the change in housing prices from pre-2000 to 2002 is 10.01% lower in Churchill County than in Lyons county.</p>
 <p>It seems like the difference between the coefficient when using &ldquo;spline&rdquo; and the coefficient when using the after-cc interaction can only be due to different specifications of the treatment. The specification of time is the same, and a one-unit change in the X variable means the same thing. However, the spline allows that change to occur gradually and strengthen over time, while the single interaction term assumes a one-time treatment change in January 2000.</p>
 <p><strong>Table 3 results extended</strong></p>
 <pre><code>. forvalues i = 2/12 {
@@ -888,7 +888,7 @@ logrealsales |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval
 ------------------------------------------------------------------------------
 
 </code></pre>
-<p>I&rsquo;m having trouble with this regression. It seems like class05 shows no variation (no one is class05), so it should be excluded <em>in addition to</em> another comparison category. However, if I exclude class05, the regression runs without exclude anyone else. But if I include class05 and exclude a different category, the regression excludes class05 and the coefficient on &ldquo;spline&rdquo; changes. I&rsquo;ve stuck with this regression because it mostly closely replicates the results in table 3, but I&rsquo;m not sure what&rsquo;s happening.</p>
+<p><strong>Treating time differently</strong></p>
 <pre><code>. levelsof date 
 360 361 362 363 364 365 366 367 368 369 370 371 372 373 374 375 376 377 378 379 380 381 382 
 &gt; 383 384 385 386 387 388 389 390 391 392 393 394 395 396 397 398 399 400 401 402 403 404 40
