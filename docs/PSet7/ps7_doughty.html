@@ -51,6 +51,7 @@ Updated:</p>
 <p>Collaborators: Hannah Denker</p>
 <h2><a href="#preparing-for-analysis" id="preparing-for-analysis">Preparing for analysis</a></h2>
 <p><strong>Sample selection and reshaping</strong></p>
+<p>The original data are stored wide by year, covering 1997, 1999, and 2001.</p>
 <pre><code>. use &quot;${datapath}psidextract.dta&quot;, clear
 
 . codebook, compact
@@ -126,7 +127,6 @@ xij variables:
   3. }
 
 </code></pre>
-<p>The data begin wide by year, covering 1997, 1999, and 2001.</p>
 <p><strong>Cleaning and recoding</strong></p>
 <pre><code>. gen married = marst==1 if marst&lt;.
 (1,424 missing values generated)
@@ -153,6 +153,10 @@ xij variables:
 (union: 12185 changes made)
 
 . 
+. replace tenure = . if inlist(tenure, 0, 98, 99)
+(4,931 real changes made, 4,931 to missing)
+
+. 
 . gen heightinches = heightft*12 + heightin
 (6,930 missing values generated)
 
@@ -172,7 +176,7 @@ xij variables:
 (1,571 observations deleted)
 (0 observations deleted)
 (400 observations deleted)
-(0 observations deleted)
+(1,054 observations deleted)
 
 . 
 . xtset id year, delta(2)
@@ -185,91 +189,292 @@ xij variables:
 <h2><a href="#pooled-ols-regressions" id="pooled-ols-regressions">Pooled OLS Regressions</a></h2>
 <pre><code>. reg logwage married i.year, vce(cluster id)
 
-Linear regression                               Number of obs     =      7,818
-                                                F(3, 3272)        =     179.02
+Linear regression                               Number of obs     =      6,764
+                                                F(3, 3066)        =     133.78
                                                 Prob &gt; F          =     0.0000
-                                                R-squared         =     0.0778
-                                                Root MSE          =     .67408
+                                                R-squared         =     0.0664
+                                                Root MSE          =     .67816
 
-                                 (Std. Err. adjusted for 3,273 clusters in id)
+                                 (Std. Err. adjusted for 3,067 clusters in id)
 ------------------------------------------------------------------------------
              |               Robust
      logwage |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
 -------------+----------------------------------------------------------------
-     married |   .3569304   .0206062    17.32   0.000      .316528    .3973328
+     married |    .333764   .0219234    15.22   0.000     .2907779    .3767501
              |
         year |
-       1999  |   .0972047   .0125084     7.77   0.000     .0726797    .1217298
-       2001  |   .2140451   .0141838    15.09   0.000     .1862351    .2418552
+       1999  |   .0900296   .0143439     6.28   0.000      .061905    .1181541
+       2001  |   .2026825   .0157599    12.86   0.000     .1717813    .2335836
              |
-       _cons |   2.290706   .0164014   139.67   0.000     2.258548    2.322864
+       _cons |   2.336544   .0180289   129.60   0.000     2.301194    2.371894
 ------------------------------------------------------------------------------
 
 </code></pre>
 <p>I did not adjust the wage variables for inflation, but the year dummies ensure that I am only comparing within a given year&ndash;I am eliminating the constant between-year variation, which includes inflation.</p>
-<p>According to this regression, married people have an average hourly wage 0.429% higher than unmarried people in the sample in the same year.</p>
+<p>According to this regression, married people have an average hourly wage 39.6% higher than unmarried people in the sample in the same year.</p>
 <pre><code>. reg logwage married education age union tenure i.year, vce(cluster id) 
 
-Linear regression                               Number of obs     =      7,818
-                                                F(7, 3272)        =     216.18
+Linear regression                               Number of obs     =      6,764
+                                                F(7, 3066)        =     167.52
                                                 Prob &gt; F          =     0.0000
-                                                R-squared         =     0.2444
-                                                Root MSE          =     .61031
+                                                R-squared         =     0.2238
+                                                Root MSE          =     .61853
 
-                                 (Std. Err. adjusted for 3,273 clusters in id)
+                                 (Std. Err. adjusted for 3,067 clusters in id)
 ------------------------------------------------------------------------------
              |               Robust
      logwage |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
 -------------+----------------------------------------------------------------
-     married |   .2677913   .0185079    14.47   0.000     .2315032    .3040795
-   education |   .1034609   .0041574    24.89   0.000     .0953097    .1116122
-         age |   .0057943   .0011454     5.06   0.000     .0035485      .00804
-       union |    .073405   .0210289     3.49   0.000     .0321739    .1146361
-      tenure |   .0090104   .0012511     7.20   0.000     .0065573    .0114634
+     married |    .255992   .0199072    12.86   0.000     .2169591    .2950248
+   education |   .1019615   .0044939    22.69   0.000     .0931502    .1107728
+         age |   .0053798   .0012725     4.23   0.000     .0028846    .0078749
+       union |   .0646716   .0220605     2.93   0.003     .0214169    .1079264
+      tenure |   .0089623   .0014185     6.32   0.000     .0061811    .0117436
              |
         year |
-       1999  |    .082144   .0122536     6.70   0.000     .0581184    .1061696
-       2001  |   .1812824   .0143291    12.65   0.000     .1531875    .2093773
+       1999  |   .0756428   .0137921     5.48   0.000     .0486002    .1026855
+       2001  |   .1726401   .0157688    10.95   0.000     .1417216    .2035585
              |
-       _cons |   .6657521   .0651715    10.22   0.000      .537971    .7935333
+       _cons |   .7231079   .0717401    10.08   0.000     .5824443    .8637716
 ------------------------------------------------------------------------------
 
 </code></pre>
-<p>Adding additional controls to the regression slightly attenuates the relationship between marital status and hourly wage, though married people still earn significantly more than unmarried people even after controlling for education status, age, union status, tenure, and year.</p>
+<p>Adding additional controls to the regression attenuates the relationship between marital status and hourly wage, though married people still earn significantly more than unmarried people even after controlling for education status, age, union status, tenure, and year.</p>
 <pre><code>. reg logwage married education age union tenure heightinches weight i.year, vce(cluster id)
 &gt;  
 
-Linear regression                               Number of obs     =      5,098
-                                                F(8, 2998)        =     142.65
+Linear regression                               Number of obs     =      4,446
+                                                F(8, 2752)        =     111.65
                                                 Prob &gt; F          =     0.0000
-                                                R-squared         =     0.2382
-                                                Root MSE          =      .6193
+                                                R-squared         =     0.2200
+                                                Root MSE          =     .62604
 
-                                 (Std. Err. adjusted for 2,999 clusters in id)
+                                 (Std. Err. adjusted for 2,753 clusters in id)
 ------------------------------------------------------------------------------
              |               Robust
      logwage |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
 -------------+----------------------------------------------------------------
-     married |   .2166674   .0224323     9.66   0.000     .1726831    .2606517
-   education |   .1029582   .0047872    21.51   0.000     .0935717    .1123447
-         age |   .0048013   .0012974     3.70   0.000     .0022574    .0073451
-       union |    .046262     .02326     1.99   0.047     .0006547    .0918692
-      tenure |   .0083455   .0013321     6.26   0.000     .0057336    .0109574
-heightinches |    .019896   .0032612     6.10   0.000     .0135017    .0262904
-      weight |  -.0004482   .0002955    -1.52   0.129    -.0010277    .0001313
+     married |   .2101282   .0240778     8.73   0.000     .1629158    .2573406
+   education |   .1006754   .0051018    19.73   0.000     .0906717    .1106791
+         age |   .0045168    .001448     3.12   0.002     .0016776    .0073561
+       union |   .0405013   .0244419     1.66   0.098     -.007425    .0884275
+      tenure |    .008287   .0015145     5.47   0.000     .0053174    .0112566
+heightinches |   .0209319   .0036036     5.81   0.000     .0138658    .0279979
+      weight |  -.0007014   .0003244    -2.16   0.031    -.0013376   -.0000653
              |
         year |
-       2001  |   .1061128   .0133137     7.97   0.000     .0800079    .1322178
+       2001  |   .1048982   .0146896     7.14   0.000     .0760945    .1337019
              |
-       _cons |  -.4593894   .2122812    -2.16   0.031     -.875621   -.0431579
+       _cons |  -.4300382   .2353223    -1.83   0.068    -.8914643    .0313879
 ------------------------------------------------------------------------------
 
 </code></pre>
 <p>While many coefficients in this regression look similar, the number of observations has significantly decreased and the year dummies now only includes 2001 (with 1999 as the ommitted category), because the weight and height variables are entirely misisng in 1997.</p>
-<p>&ldquo;Why might omitting these last two variables cause the CIA for this regression model to fail. Be specific&rdquo;</p>
+<p>Omitting height and weight might be a problem if either height or weight is correlated with both who is married and income. One specific plausible path would be the idea of physical attractiveness. Certain heights and weights (usually taller, skinnier people) are seen as more physically attractive: this makes it more likely that they will be married and more likely that they will be seen as competent, which could increase their wage. Omitting either of these variables could thus lead to positive omitted variable bias.</p>
 <h2><a href="#fixed-effects-regression" id="fixed-effects-regression">Fixed effects regression</a></h2>
 <p><strong>Using xtreg</strong></p>
-<pre><code>. 
+<pre><code>. xtreg logwage married i.year, fe robust 
+
+Fixed-effects (within) regression               Number of obs     =      6,764
+Group variable: id                              Number of groups  =      3,067
+
+R-sq:                                           Obs per group:
+     within  = 0.0718                                         min =          1
+     between = 0.0070                                         avg =        2.2
+     overall = 0.0219                                         max =          3
+
+                                                F(3,3066)         =      87.05
+corr(u_i, Xb)  = 0.0125                         Prob &gt; F          =     0.0000
+
+                                 (Std. Err. adjusted for 3,067 clusters in id)
+------------------------------------------------------------------------------
+             |               Robust
+     logwage |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     married |    .027318   .0469875     0.58   0.561    -.0648121    .1194482
+             |
+        year |
+       1999  |   .1020267   .0130422     7.82   0.000     .0764543    .1275992
+       2001  |    .232851   .0147805    15.75   0.000     .2038702    .2618318
+             |
+       _cons |   2.516684   .0291724    86.27   0.000     2.459485    2.573883
+-------------+----------------------------------------------------------------
+     sigma_u |  .64441953
+     sigma_e |  .41552447
+         rho |  .70632815   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
 </code></pre>
-<pre><code>. 
+<p>In order to interpret this estimate causally, I would need to assume that within a given person, whether or not they are married in a given year is essentially randomly assigned. I am assuming that there is nothing time-varying about a person that might correlate with both their wages and marital status.</p>
+<p>This is slightly less heroic than the assumptions required for the cross-sectional regression above. In the cross-sectional case, I needed to assume that whether or not a person is married is randomly assigned, without the ability to qualify randomly assigned at a specific time, within a specific person. In the cross-sectional data, I was worried about bias from both time-varying and time-invariant omitted variables. Adding fixed effects allows me to eliminate the concerns about OVB specifically from person-level time-invariant variables.</p>
+<pre><code>. xtreg logwage married education age union tenure i.year, fe robust 
+note: education omitted because of collinearity
+
+Fixed-effects (within) regression               Number of obs     =      6,764
+Group variable: id                              Number of groups  =      3,067
+
+R-sq:                                           Obs per group:
+     within  = 0.0719                                         min =          1
+     between = 0.0087                                         avg =        2.2
+     overall = 0.0005                                         max =          3
+
+                                                F(6,3066)         =      44.48
+corr(u_i, Xb)  = -0.1667                        Prob &gt; F          =     0.0000
+
+                                 (Std. Err. adjusted for 3,067 clusters in id)
+------------------------------------------------------------------------------
+             |               Robust
+     logwage |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     married |   .0266616   .0469219     0.57   0.570      -.06534    .1186632
+   education |          0  (omitted)
+         age |  -.0091924   .0243809    -0.38   0.706     -.056997    .0386122
+       union |    .022209   .0432718     0.51   0.608    -.0626356    .1070536
+      tenure |   .0007298   .0031345     0.23   0.816    -.0054162    .0068759
+             |
+        year |
+       1999  |   .1200248   .0520401     2.31   0.021     .0179877    .2220619
+       2001  |   .2687311   .1015173     2.65   0.008     .0696823    .4677798
+             |
+       _cons |    2.85806    .935603     3.05   0.002     1.023588    4.692533
+-------------+----------------------------------------------------------------
+     sigma_u |  .66255345
+     sigma_e |  .41565649
+         rho |  .71757899   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
 </code></pre>
+<p>Stata dropped the education control variable, because in these data education is time-invariant. Therefore, in the fixed effects specification, we are always comparing observations with the same level of education. This makes education perfectly colinear, so it is removed from the equation.</p>
+<p>&ldquo;Is there a variable you expected to have dropped that was not? If so, which one? Explore the coding of any variables to see why they were not mechanically removed from the regression specification.&rdquo;</p>
+<p>I&hellip;did not expect any other variables to be removed from the regression? The rest of the variables are time-varying?</p>
+<p>The coefficient on the married dummy is much lower in the fixed effects regression than in the cross-sectional regression. I would interpret this change as meaning that the OVB from time-invariant variables was positive and relatively large.</p>
+<p>The standard errors have increased from the cross-sectional regression to the fixed effects regression. Regression coefficients, which measure how Y varies with variation in X, are more precisely estimated (lower standard errors) when there is a lot of X variation to work with. By only comparing within individuals in the FE regression, we reduced the X variation, thus increasing our standard errors.</p>
+<p><strong>Using dummy variables for each ID</strong></p>
+<pre><code>. *reg logwage married education age union tenure i.year i.id, robust
+</code></pre>
+<p>Stata runs up against variable limits when I try to run this regression outside of xtreg. It is not the de-meaning process in the regression that causes the problem but simply the modeling and output of that many variables. xtreg still performs the de-meaning FE process, but without needing the unwieldy creation and reporting of so many variables</p>
+<p><strong>De-meaning</strong></p>
+<pre><code>. forvalues yr = 1997(2)2001 {
+  2.         gen year`yr' = year==`yr'
+  3. }
+
+. sort id year 
+
+. foreach var in logwage married age union tenure year1997 year1999 year2001 {
+  2.         by id: egen `var'_mean = mean(`var')
+  3.         gen `var'_demean = `var' - `var'_mean
+  4. }
+
+. reg logwage_demean married_demean age_demean union_demean tenure_demean year1999_demean ye
+&gt; ar2001_demean, robust 
+
+Linear regression                               Number of obs     =      6,764
+                                                F(6, 6757)        =      72.51
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.0719
+                                                Root MSE          =     .30721
+
+---------------------------------------------------------------------------------
+                |               Robust
+ logwage_demean |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+----------------+----------------------------------------------------------------
+ married_demean |   .0266616    .036006     0.74   0.459    -.0439215    .0972448
+     age_demean |  -.0091924   .0177026    -0.52   0.604     -.043895    .0255102
+   union_demean |    .022209   .0318996     0.70   0.486    -.0403243    .0847422
+  tenure_demean |   .0007298   .0023383     0.31   0.755     -.003854    .0053137
+year1999_demean |   .1200248   .0381635     3.15   0.002     .0452122    .1948374
+year2001_demean |   .2687311   .0741544     3.62   0.000     .1233651    .4140971
+          _cons |   5.76e-09   .0037353     0.00   1.000    -.0073224    .0073224
+---------------------------------------------------------------------------------
+
+</code></pre>
+<p>I was able to replicate the coefficient results from the xtreg. However, the standard errors are substantially lower.</p>
+<p><strong>Differencing</strong></p>
+<pre><code>. foreach var in logwage married age union tenure {
+  2.         gen `var'_dif = d.`var'
+  3. }
+(3,320 missing values generated)
+(3,320 missing values generated)
+(3,320 missing values generated)
+(3,320 missing values generated)
+(3,320 missing values generated)
+
+. regress logwage_dif married_dif age_dif union_dif tenure_dif i.year
+
+      Source |       SS           df       MS      Number of obs   =     3,444
+-------------+----------------------------------   F(5, 3438)      =      1.04
+       Model |   1.6826386         5  .336527721   Prob &gt; F        =    0.3894
+    Residual |  1107.44292     3,438   .32211836   R-squared       =    0.0015
+-------------+----------------------------------   Adj R-squared   =    0.0001
+       Total |  1109.12556     3,443  .322139286   Root MSE        =    .56755
+
+------------------------------------------------------------------------------
+ logwage_dif |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+ married_dif |   .0558333   .0419975     1.33   0.184    -.0265093    .1381758
+     age_dif |  -.0137031   .0249118    -0.55   0.582    -.0625466    .0351404
+   union_dif |   .0429049   .0396517     1.08   0.279    -.0348383    .1206481
+  tenure_dif |  -.0006428   .0025646    -0.25   0.802     -.005671    .0043854
+             |
+        year |
+       2001  |   .0268895    .019432     1.38   0.167      -.01121    .0649891
+             |
+       _cons |   .1333014   .0528168     2.52   0.012      .029746    .2368568
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>I prefer the fixed effects specification, because I believe the interpretation is a little easier. It seems simpler to me. Regression coefficients are already about differences, so comparing differences of changes seems to be unnecessarily complicated.</p>
+<pre><code>. xtreg logwage married age union tenure i.year if year!=1997, fe robust 
+
+Fixed-effects (within) regression               Number of obs     =      4,512
+Group variable: id                              Number of groups  =      2,779
+
+R-sq:                                           Obs per group:
+     within  = 0.0510                                         min =          1
+     between = 0.0613                                         avg =        1.6
+     overall = 0.0584                                         max =          2
+
+                                                F(5,2778)         =      19.30
+corr(u_i, Xb)  = 0.0756                         Prob &gt; F          =     0.0000
+
+                                 (Std. Err. adjusted for 2,779 clusters in id)
+------------------------------------------------------------------------------
+             |               Robust
+     logwage |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     married |   .0880918   .0611293     1.44   0.150    -.0317717    .2079553
+         age |   .0094927   .0304306     0.31   0.755    -.0501762    .0691615
+       union |  -.0090267   .0616841    -0.15   0.884    -.1299781    .1119247
+      tenure |   .0024571   .0048044     0.51   0.609    -.0069635    .0118776
+             |
+        year |
+       2001  |    .108246   .0639093     1.69   0.090    -.0170685    .2335604
+             |
+       _cons |   2.169252    1.23561     1.76   0.079    -.2535543    4.592057
+-------------+----------------------------------------------------------------
+     sigma_u |  .65726077
+     sigma_e |  .40776909
+         rho |  .72207136   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. reg logwage_dif married_dif age_dif union_dif tenure_dif if year==2001, robust 
+
+Linear regression                               Number of obs     =      1,733
+                                                F(4, 1728)        =       0.70
+                                                Prob &gt; F          =     0.5898
+                                                R-squared         =     0.0015
+                                                Root MSE          =     .57667
+
+------------------------------------------------------------------------------
+             |               Robust
+ logwage_dif |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+ married_dif |   .0880918   .0611728     1.44   0.150    -.0318886    .2080722
+     age_dif |   .0094927   .0304522     0.31   0.755    -.0502344    .0692198
+   union_dif |  -.0090267    .061728    -0.15   0.884    -.1300961    .1120427
+  tenure_dif |   .0024571   .0048078     0.51   0.609    -.0069727    .0118868
+       _cons |    .108246   .0639547     1.69   0.091    -.0171907    .2336827
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>Results are the same for all coefficients of interest. The fixed effect has a constant that is not found in the differencing approach (it gets subtracted out in the differencing), and the coefficient on &ldquo;2001&rdquo; in the fixed effects specification is the constant in the differencing approach because that is the overall change between 1999 and 2001.</p>
