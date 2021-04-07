@@ -47,7 +47,7 @@ try {
 <p>Michelle Doughty<br />
 ECON 8848</p>
 <p>Began: 18 Mar 2021<br />
-Updated:</p>
+Updated: 7 April 2021</p>
 <p>Collaborators: Hannah Denker</p>
 <h2><a href="#preparing-for-analysis" id="preparing-for-analysis">Preparing for analysis</a></h2>
 <p><strong>Sample selection and reshaping</strong></p>
@@ -57,7 +57,7 @@ Updated:</p>
 . codebook, compact
 
 Variable        Obs Unique      Mean  Min     Max  Label
---------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------
 id            25115  25115     12558    1   25115  
 age1997        6747     81  44.66089   17     999  AGE OF HEAD
 marst1997      6747      6    1.9668    1       9  HEAD MARITAL STATUS
@@ -87,7 +87,7 @@ weight2001     7822    229  202.5266    0     999  H22 WEIGHT
 heightft2001   7822      7  5.290846    0       9  H23 HEIGHT-FEET
 heightin2001   7822     14  6.214012    0      99  H23 HEIGHT-INCHES
 education      7822     19  18.20391    0      99  COMPLETED ED-HD
---------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------
 
 . keep if age1997 &lt;= 55 &amp; age1997 &gt;= 18
 (19,828 observations deleted)
@@ -239,9 +239,8 @@ Linear regression                               Number of obs     =      6,764
 ------------------------------------------------------------------------------
 
 </code></pre>
-<p>Adding additional controls to the regression attenuates the relationship between marital status and hourly wage, though married people still earn significantly more than unmarried people even after controlling for education status, age, union status, tenure, and year.</p>
-<pre><code>. reg logwage married education age union tenure heightinches weight i.year, vce(cluster id)
-&gt;  
+<p>Adding additional controls to the regression weakens the relationship between marital status and hourly wage, though married people still earn significantly more than unmarried people even after controlling for education status, age, union status, tenure, and year.</p>
+<pre><code>. reg logwage married education age union tenure heightinches weight i.year, vce(cluster id) 
 
 Linear regression                               Number of obs     =      4,446
                                                 F(8, 2752)        =     111.65
@@ -269,7 +268,7 @@ heightinches |   .0209319   .0036036     5.81   0.000     .0138658    .0279979
 ------------------------------------------------------------------------------
 
 </code></pre>
-<p>While many coefficients in this regression look similar, the number of observations has significantly decreased and the year dummies now only includes 2001 (with 1999 as the ommitted category), because the weight and height variables are entirely misisng in 1997.</p>
+<p>While many coefficients in this regression look similar, the number of observations has significantly decreased and the year dummies now only includes 2001 (with 1999 as the ommitted category), because the weight and height variables are entirely missing in 1997.</p>
 <p>Omitting height and weight might be a problem if either height or weight is correlated with both who is married and income. One specific plausible path would be the idea of physical attractiveness. Certain heights and weights (usually taller, skinnier people) are seen as more physically attractive: this makes it more likely that they will be married and more likely that they will be seen as competent, which could increase their wage. Omitting either of these variables could thus lead to positive omitted variable bias.</p>
 <h2><a href="#fixed-effects-regression" id="fixed-effects-regression">Fixed effects regression</a></h2>
 <p><strong>Using xtreg</strong></p>
@@ -345,14 +344,13 @@ corr(u_i, Xb)  = -0.1667                        Prob &gt; F          =     0.000
 
 </code></pre>
 <p>Stata dropped the education control variable, because in these data education is time-invariant. Therefore, in the fixed effects specification, we are always comparing observations with the same level of education. This makes education perfectly colinear, so it is removed from the equation.</p>
-<p>&ldquo;Is there a variable you expected to have dropped that was not? If so, which one? Explore the coding of any variables to see why they were not mechanically removed from the regression specification.&rdquo;</p>
-<p>I&hellip;did not expect any other variables to be removed from the regression? The rest of the variables are time-varying?</p>
+<p>I expected age to be dropped, because it changed similarly for each person (i.e. I assumed I wouldn&rsquo;t be able to have year, fixed effects, <em>and</em> age). But it looks like age occasionally changes by 1 year more or less than expected. Assuming that this is survey data, this could be due to different timing of survey collection and birthdays. There is also at least some measurement error, based on id 11786 who aged 13 years between 1999 and 2001.</p>
 <p>The coefficient on the married dummy is much lower in the fixed effects regression than in the cross-sectional regression. I would interpret this change as meaning that the OVB from time-invariant variables was positive and relatively large.</p>
 <p>The standard errors have increased from the cross-sectional regression to the fixed effects regression. Regression coefficients, which measure how Y varies with variation in X, are more precisely estimated (lower standard errors) when there is a lot of X variation to work with. By only comparing within individuals in the FE regression, we reduced the X variation, thus increasing our standard errors.</p>
 <p><strong>Using dummy variables for each ID</strong></p>
 <pre><code>. *reg logwage married education age union tenure i.year i.id, robust
 </code></pre>
-<p>Stata runs up against variable limits when I try to run this regression outside of xtreg. It is not the de-meaning process in the regression that causes the problem but simply the modeling and output of that many variables. xtreg still performs the de-meaning FE process, but without needing the unwieldy creation and reporting of so many variables</p>
+<p>Stata runs up against variable limits when I try to run this regression outside of xtreg. It is not the de-meaning process in the regression that causes the problem but simply the modeling and output of that many variables. xtreg still performs the de-meaning fixed effects process, but without needing the unwieldy creation and reporting of so many variables.</p>
 <p><strong>De-meaning</strong></p>
 <pre><code>. forvalues yr = 1997(2)2001 {
   2.         gen year`yr' = year==`yr'
@@ -365,8 +363,7 @@ corr(u_i, Xb)  = -0.1667                        Prob &gt; F          =     0.000
   3.         gen `var'_demean = `var' - `var'_mean
   4. }
 
-. reg logwage_demean married_demean age_demean union_demean tenure_demean year1999_demean ye
-&gt; ar2001_demean, robust 
+. reg logwage_demean married_demean age_demean union_demean tenure_demean year1999_demean year2001_demean, robust 
 
 Linear regression                               Number of obs     =      6,764
                                                 F(6, 6757)        =      72.51
@@ -423,7 +420,7 @@ year2001_demean |   .2687311   .0741544     3.62   0.000     .1233651    .414097
 ------------------------------------------------------------------------------
 
 </code></pre>
-<p>I prefer the fixed effects specification, because I believe the interpretation is a little easier. It seems simpler to me. Regression coefficients are already about differences, so comparing differences of changes seems to be unnecessarily complicated.</p>
+<p>I prefer the fixed effects specification, because I believe the interpretation makes a little more sense. I would assume that if there really is a causal effect of being married, that it would be best captured by comparing all married times to all non-married times. It seems that the benefit of a spouse would not just appear during the year one got married but would be best understood by comparison within person.</p>
 <pre><code>. xtreg logwage married age union tenure i.year if year!=1997, fe robust 
 
 Fixed-effects (within) regression               Number of obs     =      4,512
