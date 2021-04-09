@@ -1,0 +1,568 @@
+<head>
+  <link rel="stylesheet" type="text/css" href="stmarkdown.css">
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
+</script>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function() {
+    htmlTableOfContents();
+} );                        
+
+function htmlTableOfContents( documentRef ) {
+    var documentRef = documentRef || document;
+    var toc = documentRef.getElementById("toc");
+//  Use headings inside <article> only:
+//  var headings = [].slice.call(documentRef.body.querySelectorAll('article h1, article h2, article h3, article h4, article h5, article h6'));
+    var headings = [].slice.call(documentRef.body.querySelectorAll('h1, h2, h3, h4, h5, h6'));
+    headings.forEach(function (heading, index) {
+        var ref = "toc" + index;
+        if ( heading.hasAttribute( "id" ) ) 
+            ref = heading.getAttribute( "id" );
+        else
+            heading.setAttribute( "id", ref );
+
+        var link = documentRef.createElement( "a" );
+        link.setAttribute( "href", "#"+ ref );
+        link.textContent = heading.textContent;
+
+        var div = documentRef.createElement( "div" );
+        div.setAttribute( "class", heading.tagName.toLowerCase() );
+        div.appendChild( link );
+        toc.appendChild( div );
+    });
+}
+
+
+try {
+    module.exports = htmlTableOfContents;
+} catch (e) {
+    // module.exports is not defined
+}
+</script>
+</head>  
+<h1><a href="#pset-9" id="pset-9">PSet 9</a></h1>
+<p>Michelle Doughty<br />
+ECON 8848</p>
+<p>Began: 9 April 2021<br />
+Updated: 15 April 2021</p>
+<p>Collaborators: Hannah Denker</p>
+<h2><a href="#constant-treatment-effects" id="constant-treatment-effects">Constant Treatment Effects</a></h2>
+<p><strong>OLS and the Reduced Form</strong></p>
+<pre><code>. use &quot;${datapath}card.dta&quot;, clear
+
+. regress lwage educ exper expersq smsa black married reg661 reg662 reg663 reg664 reg665 reg666
+&gt;  reg667 reg668, robust
+
+Linear regression                               Number of obs     =      3,003
+                                                F(14, 2988)       =     103.13
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.3143
+                                                Root MSE          =     .36825
+
+------------------------------------------------------------------------------
+             |               Robust
+       lwage |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+        educ |   .0723986   .0036268    19.96   0.000     .0652873    .0795099
+       exper |    .074115   .0067653    10.96   0.000     .0608499    .0873801
+     expersq |  -.0019903   .0003171    -6.28   0.000    -.0026121   -.0013686
+        smsa |   .1718545    .015135    11.35   0.000     .1421784    .2015306
+       black |  -.1748813   .0182329    -9.59   0.000    -.2106316   -.1391311
+     married |  -.0334849   .0035957    -9.31   0.000    -.0405352   -.0264347
+      reg661 |   -.115758   .0380337    -3.04   0.002    -.1903329    -.041183
+      reg662 |  -.0303437   .0294862    -1.03   0.304     -.088159    .0274716
+      reg663 |   .0124145   .0281955     0.44   0.660    -.0428702    .0676991
+      reg664 |  -.0793545      .0363    -2.19   0.029    -.1505301    -.008179
+      reg665 |  -.1213071   .0293769    -4.13   0.000    -.1789082    -.063706
+      reg666 |  -.1195238   .0333104    -3.59   0.000    -.1848374   -.0542101
+      reg667 |  -.1516475   .0326401    -4.65   0.000    -.2156468   -.0876482
+      reg668 |  -.1814218   .0461295    -3.93   0.000    -.2718705   -.0909731
+       _cons |   4.901141   .0760416    64.45   0.000     4.752042     5.05024
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>The coefficient on education, 0.072, indicates that an additional year of education is associated with about a 7.51% higher wage, controlling for covariates.</p>
+<p>This coefficient cannot be interpreted causally due to the many possibilities for omitted variable bias, as many other things like family background or motivation could be correlated with both educational attainment and wages. I would anticipate that the coefficient is likely biased upward, as many indicators of family background or personal motivation would be positively associated with education and future wages.</p>
+<p>The reasoning is that, since most people do not live systematically by institutes of higher education, there is some quasi-random variation in proximity to college campuses. Additionally, there is likely an association between how close you are to a campus and likelihood of attending higher education. This means that proximity to campus can be used to identify some plausibly random variation in higher education attainment.</p>
+<pre><code>. regress lwage nearc4 exper expersq smsa black married reg661 reg662 reg663 reg664 reg665 reg6
+&gt; 66 reg667 reg668, robust
+
+Linear regression                               Number of obs     =      3,003
+                                                F(14, 2988)       =      61.58
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.2162
+                                                Root MSE          =     .39373
+
+------------------------------------------------------------------------------
+             |               Robust
+       lwage |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      nearc4 |   .0408903   .0164301     2.49   0.013     .0086748    .0731059
+       exper |   .0426648   .0068085     6.27   0.000      .029315    .0560146
+     expersq |  -.0018805   .0003241    -5.80   0.000     -.002516   -.0012449
+        smsa |   .1978837   .0168972    11.71   0.000     .1647524     .231015
+       black |   -.238753   .0194308   -12.29   0.000     -.276852    -.200654
+     married |  -.0388085   .0038657   -10.04   0.000    -.0463882   -.0312287
+      reg661 |  -.1329871   .0406662    -3.27   0.001    -.2127237   -.0532505
+      reg662 |  -.0550023   .0320681    -1.72   0.086    -.1178801    .0078756
+      reg663 |  -.0071535   .0300304    -0.24   0.812    -.0660358    .0517289
+      reg664 |  -.0885589   .0376467    -2.35   0.019    -.1623751   -.0147428
+      reg665 |  -.1588867   .0315447    -5.04   0.000    -.2207383   -.0970352
+      reg666 |  -.1580338   .0356689    -4.43   0.000    -.2279718   -.0880958
+      reg667 |  -.1862407   .0352942    -5.28   0.000    -.2554442   -.1170372
+      reg668 |  -.1600744   .0485968    -3.29   0.001     -.255361   -.0647878
+       _cons |   6.134081   .0439469   139.58   0.000     6.047911     6.22025
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>There is a statistically significant relationship between college proximity and earnings, conditional on other controls.</p>
+<p>In order for the IV strategy to be valid, we would need to accept that there is plausibly exogenous variation in college proximity: i.e. that it is random enough that we can estimate the effect of college proximity on education simply by regressing with covariates. We must also accept that proximity to college only affects earnings through educational attainment.</p>
+<p>I am not sure I believe this assumption. There is some likelihood that families who care about education might live closer to institutes of higher education, either by deliberate choice or simply because families that particularly emphasize college might settle around the place where they went to college. There is also the possible influence of being around a college on the quality of elementary and secondary educational quality, which may lead to an effect on later wages that is not mediated by educational attainment (off the argument that quality as well as quantity of education might have an effect on future wages). Additionally, colleges are not placed randomly and could have effects on local labor markets. What if the areas around colleges tend to have higher paying jobs all-around? Then there would be a direct connection between proximity to a college campus and wages.</p>
+<pre><code>. regress lwage nearc4 libcrd14 exper expersq smsa black married reg661 reg662 reg663 reg664 re
+&gt; g665 reg666 reg667 reg668, robust
+
+Linear regression                               Number of obs     =      2,990
+                                                F(15, 2974)       =      59.36
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.2232
+                                                Root MSE          =     .39215
+
+------------------------------------------------------------------------------
+             |               Robust
+       lwage |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      nearc4 |   .0350684   .0164157     2.14   0.033     .0028812    .0672556
+    libcrd14 |   .0908514   .0170074     5.34   0.000     .0575038    .1241989
+       exper |   .0445679   .0068253     6.53   0.000     .0311851    .0579508
+     expersq |  -.0018723   .0003247    -5.77   0.000     -.002509   -.0012356
+        smsa |   .1907143   .0169086    11.28   0.000     .1575607     .223868
+       black |  -.2185405   .0198156   -11.03   0.000    -.2573941   -.1796869
+     married |  -.0385634   .0038624    -9.98   0.000    -.0461367   -.0309901
+      reg661 |  -.1425309   .0405914    -3.51   0.000    -.2221209   -.0629408
+      reg662 |  -.0548458   .0322502    -1.70   0.089    -.1180808    .0083892
+      reg663 |  -.0080293   .0302608    -0.27   0.791    -.0673635    .0513049
+      reg664 |  -.0868064   .0377818    -2.30   0.022    -.1608875   -.0127252
+      reg665 |   -.138326    .031912    -4.33   0.000    -.2008979   -.0757542
+      reg666 |   -.134827   .0361422    -3.73   0.000    -.2056932   -.0639607
+      reg667 |  -.1799927   .0353362    -5.09   0.000    -.2492785   -.1107068
+      reg668 |   -.159776   .0487169    -3.28   0.001    -.2552983   -.0642537
+       _cons |   6.052649   .0459843   131.62   0.000     5.962485    6.142814
+------------------------------------------------------------------------------
+
+. glob red_coef = _b[nearc4]
+
+</code></pre>
+<p><strong>• How might the inclusion of this variable help you meet the required assumption you discussed above?</strong></p>
+<pre><code>. foreach var in iq fatheduc motheduc {
+  2.         regress `var' nearc4, robust
+  3. } 
+
+Linear regression                               Number of obs     =      2,061
+                                                F(1, 2059)        =      12.00
+                                                Prob &gt; F          =     0.0005
+                                                R-squared         =     0.0059
+                                                Root MSE          =     15.382
+
+------------------------------------------------------------------------------
+             |               Robust
+          iq |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      nearc4 |     2.5962   .7494531     3.46   0.001     1.126435    4.065965
+       _cons |   100.6106   .6331052   158.92   0.000     99.36906    101.8522
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =      2,320
+                                                F(1, 2318)        =      44.71
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.0200
+                                                Root MSE          =     3.6842
+
+------------------------------------------------------------------------------
+             |               Robust
+    fatheduc |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      nearc4 |   1.135089   .1697563     6.69   0.000     .8021991    1.467979
+       _cons |   9.221607   .1439234    64.07   0.000     8.939375    9.503839
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =      2,657
+                                                F(1, 2655)        =      19.10
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.0075
+                                                Root MSE          =     3.1683
+
+------------------------------------------------------------------------------
+             |               Robust
+    motheduc |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      nearc4 |   .5936834   .1358606     4.37   0.000       .32728    .8600868
+       _cons |   9.939686    .114842    86.55   0.000     9.714498    10.16488
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>Well, it appears that living near a 4-year-college has a statistically significant relationship with IQ and parents&rsquo; education. To me, this would indicate that a violation of the assumption that living near a college campus is plausibly random.</p>
+<pre><code>. foreach var in iq fatheduc motheduc {
+  2.         regress `var' nearc4 libcrd14 exper expersq smsa black married reg661 reg662 reg66
+&gt; 3 reg664 reg665 reg666 reg667 reg668, robust
+  3. } 
+
+Linear regression                               Number of obs     =      2,054
+                                                F(15, 2038)       =      63.02
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.3125
+                                                Root MSE          =     12.816
+
+------------------------------------------------------------------------------
+             |               Robust
+          iq |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      nearc4 |   .6954302   .6531727     1.06   0.287    -.5855256    1.976386
+    libcrd14 |   2.354741   .7059468     3.34   0.001     .9702883    3.739193
+       exper |  -2.464713   .3129854    -7.87   0.000    -3.078517   -1.850908
+     expersq |   .0641772   .0165243     3.88   0.000     .0317709    .0965835
+        smsa |   2.019891   .6639257     3.04   0.002     .7178477    3.321935
+       black |   -15.7274   .9361118   -16.80   0.000    -17.56323   -13.89156
+     married |  -.1654898   .1552282    -1.07   0.287    -.4699123    .1389327
+      reg661 |   3.166403    1.48745     2.13   0.033     .2493223    6.083483
+      reg662 |   3.204225   1.125795     2.85   0.004      .996395    5.412054
+      reg663 |   2.027419   1.104119     1.84   0.066    -.1378998    4.192738
+      reg664 |   2.332276    1.34653     1.73   0.083    -.3084424    4.972995
+      reg665 |  -.3935641   1.200562    -0.33   0.743    -2.748021    1.960893
+      reg666 |  -.2957982   1.499408    -0.20   0.844    -3.236329    2.644733
+      reg667 |  -1.788874   1.381495    -1.29   0.196    -4.498163    .9204159
+      reg668 |  -.9219213   2.092813    -0.44   0.660    -5.026196    3.182354
+       _cons |   115.5712   1.931281    59.84   0.000     111.7837    119.3587
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =      2,309
+                                                F(15, 2293)       =      64.61
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.2785
+                                                Root MSE          =     3.1714
+
+------------------------------------------------------------------------------
+             |               Robust
+    fatheduc |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      nearc4 |   .2405954   .1587178     1.52   0.130    -.0706501     .551841
+    libcrd14 |   1.637407   .1684022     9.72   0.000     1.307171    1.967644
+       exper |  -.2619366   .0635203    -4.12   0.000    -.3864999   -.1373733
+     expersq |   .0001229   .0031949     0.04   0.969    -.0061423    .0063881
+        smsa |   .6876318   .1604738     4.29   0.000     .3729428    1.002321
+       black |  -2.120746   .2169997    -9.77   0.000    -2.546282    -1.69521
+     married |   .0164454   .0340413     0.48   0.629    -.0503096    .0832005
+      reg661 |   .2830821   .3539979     0.80   0.424    -.4111075    .9772716
+      reg662 |  -.0725979   .2624938    -0.28   0.782    -.5873481    .4421522
+      reg663 |  -.1183007   .2592329    -0.46   0.648    -.6266562    .3900548
+      reg664 |  -.1854298   .3322175    -0.56   0.577     -.836908    .4660484
+      reg665 |   -.460191   .2882338    -1.60   0.110    -1.025417    .1050353
+      reg666 |  -.5071661   .3596041    -1.41   0.159    -1.212349    .1980172
+      reg667 |  -.9666733   .3424899    -2.82   0.005    -1.638296   -.2950509
+      reg668 |   .5985902   .4602027     1.30   0.193    -.3038669    1.501047
+       _cons |   10.92784   .4273187    25.57   0.000     10.08986    11.76581
+------------------------------------------------------------------------------
+
+Linear regression                               Number of obs     =      2,643
+                                                F(15, 2627)       =      49.46
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.2319
+                                                Root MSE          =     2.7942
+
+------------------------------------------------------------------------------
+             |               Robust
+    motheduc |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      nearc4 |  -.0365071   .1294789    -0.28   0.778    -.2903981    .2173838
+    libcrd14 |   1.347796   .1380476     9.76   0.000     1.077103    1.618489
+       exper |  -.1478213    .051086    -2.89   0.004    -.2479942   -.0476485
+     expersq |  -.0018569   .0025869    -0.72   0.473    -.0069294    .0032157
+        smsa |   .4098395   .1355774     3.02   0.003     .1439902    .6756888
+       black |  -1.627666   .1651112    -9.86   0.000    -1.951428   -1.303905
+     married |   .0288112   .0279087     1.03   0.302     -.025914    .0835365
+      reg661 |   .3943553   .2896585     1.36   0.173    -.1736266    .9623372
+      reg662 |  -.0581248   .2295874    -0.25   0.800    -.5083152    .3920657
+      reg663 |   .1252303     .22549     0.56   0.579    -.3169257    .5673863
+      reg664 |   .0833181   .2612192     0.32   0.750    -.4288982    .5955343
+      reg665 |  -.1367708   .2458959    -0.56   0.578    -.6189401    .3453984
+      reg666 |  -.0094992   .2909328    -0.03   0.974      -.57998    .5609815
+      reg667 |  -.8902584   .2828458    -3.15   0.002    -1.444882   -.3356352
+      reg668 |   .5209278    .381541     1.37   0.172    -.2272235    1.269079
+       _cons |   10.91884    .355736    30.69   0.000     10.22129    11.61639
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>After including these covariates, there is no longer a statistically significant relationship between living near a 4-year college and IQ or parents&rsquo; education. This indicates that, conditional on these covariates, living near a four-year-college campus may indeed be plausibly random. So I am more willing to believe the CIA.</p>
+<p><strong>The First Stage and IV</strong></p>
+<pre><code>. regress educ nearc4 libcrd14 exper expersq smsa black married reg661 reg662 reg663 reg664 reg
+&gt; 665 reg666 reg667 reg668, robust
+
+Linear regression                               Number of obs     =      2,990
+                                                F(15, 2974)       =     252.34
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.4945
+                                                Root MSE          =     1.9074
+
+------------------------------------------------------------------------------
+             |               Robust
+        educ |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      nearc4 |   .2584743   .0801679     3.22   0.001     .1012841    .4156644
+    libcrd14 |   .8052401   .0826993     9.74   0.000     .6430864    .9673939
+       exper |  -.4221032   .0320714   -13.16   0.000    -.4849876   -.3592188
+     expersq |   .0018229   .0016716     1.09   0.276    -.0014547    .0051005
+        smsa |   .3708069   .0855266     4.34   0.000     .2031097    .5385042
+       black |  -.7029945    .094666    -7.43   0.000     -.888612   -.5173771
+     married |  -.0723329   .0175775    -4.12   0.000    -.1067982   -.0378677
+      reg661 |   -.316015   .1928613    -1.64   0.101    -.6941701    .0621401
+      reg662 |  -.3436645   .1479011    -2.32   0.020    -.6336634   -.0536657
+      reg663 |  -.2966875   .1391426    -2.13   0.033     -.569513    -.023862
+      reg664 |  -.1378759   .1780234    -0.77   0.439    -.4869373    .2111856
+      reg665 |  -.3873746   .1449945    -2.67   0.008    -.6716743   -.1030749
+      reg666 |  -.4151881   .1648519    -2.52   0.012    -.7384235   -.0919528
+      reg667 |  -.4862586   .1598017    -3.04   0.002    -.7995917   -.1729255
+      reg668 |   .2625731   .2300455     1.14   0.254    -.1884914    .7136376
+       _cons |   16.47965   .2072312    79.52   0.000     16.07332    16.88599
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>Living near a college campus does have a statistically significant relationship with education level, so I don&rsquo;t think the instrument is <em>too</em> weak. But by itself, variation in living near or far from a college campus only accounts for 2% of the variation in education level, so I&rsquo;m not fully convinced that it&rsquo;s a particularly strong instrument.</p>
+<p>I would predict that my coefficient will be the coefficient from the reduced form, 0.035, divided by the coefficient from the first stage, 0.258, or 0.136</p>
+<pre><code>. ivregress 2sls lwage (educ=nearc4) libcrd14 exper expersq smsa black married reg661 reg662 re
+&gt; g663 reg664 reg665 reg666 reg667 reg668, vce(robust)
+
+Instrumental variables (2SLS) regression          Number of obs   =      2,990
+                                                  Wald chi2(15)   =     924.24
+                                                  Prob &gt; chi2     =     0.0000
+                                                  R-squared       =     0.2383
+                                                  Root MSE        =     .38727
+
+------------------------------------------------------------------------------
+             |               Robust
+       lwage |      Coef.   Std. Err.      z    P&gt;|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+        educ |   .1356747   .0639287     2.12   0.034     .0103768    .2609727
+    libcrd14 |  -.0183994    .054148    -0.34   0.734    -.1245274    .0877287
+       exper |   .1018367   .0278795     3.65   0.000     .0471938    .1564796
+     expersq |  -.0021196     .00037    -5.73   0.000    -.0028448   -.0013945
+        smsa |   .1404052    .033524     4.19   0.000     .0746994     .206111
+       black |  -.1231619   .0479368    -2.57   0.010    -.2171163   -.0292074
+     married |  -.0287496   .0059411    -4.84   0.000     -.040394   -.0171052
+      reg661 |  -.0996556   .0435544    -2.29   0.022    -.1850207   -.0142905
+      reg662 |  -.0082192   .0367875    -0.22   0.823    -.0803214     .063883
+      reg663 |   .0322237   .0355865     0.91   0.365    -.0375246    .1019719
+      reg664 |  -.0681001    .040229    -1.69   0.090    -.1469475    .0107473
+      reg665 |  -.0857691   .0413266    -2.08   0.038    -.1667677   -.0047705
+      reg666 |  -.0784964   .0459994    -1.71   0.088    -.1686535    .0116607
+      reg667 |  -.1140196   .0481825    -2.37   0.018    -.2084556   -.0195837
+      reg668 |  -.1954005    .050506    -3.87   0.000    -.2943904   -.0964106
+       _cons |   3.816776   1.062399     3.59   0.000     1.734513    5.899039
+------------------------------------------------------------------------------
+Instrumented:  educ
+Instruments:   libcrd14 exper expersq smsa black married reg661 reg662
+               reg663 reg664 reg665 reg666 reg667 reg668 nearc4
+
+</code></pre>
+<p>I am surprised that these results are higher than the OLS results, indicating that the original results were negatively biased, implying some original omitted variable that would have been positively correlated with education and negatively correlated with earnings.</p>
+<p>My best explanation for this would be a violation of the assumption of constant treatment effects that started this section. I think it&rsquo;s plausible that the type of people whose higher education attainment decisions are responsive to physical location might benefit more from higher education. These are likely to be people facing significant financial burden to college who might have otherwise, as Card argued, stopped education &ldquo;too soon.&rdquo;</p>
+<h2><a href="#heterogeneous-treatment-effects" id="heterogeneous-treatment-effects">Heterogeneous Treatment Effects</a></h2>
+<pre><code>. use &quot;${datapath}jtpa.dta&quot;, clear
+
+. regress assignment highschool black hispanic married age1 age2 age3 age4, robust
+
+Linear regression                               Number of obs     =      5,102
+                                                F(8, 5093)        =       0.74
+                                                Prob &gt; F          =     0.6566
+                                                R-squared         =     0.0011
+                                                Root MSE          =     .47171
+
+------------------------------------------------------------------------------
+             |               Robust
+  assignment |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  highschool |  -.0009188   .0148948    -0.06   0.951     -.030119    .0282813
+       black |   .0059425   .0158148     0.38   0.707    -.0250614    .0369464
+    hispanic |   .0143368   .0225758     0.64   0.525    -.0299214    .0585951
+     married |   .0252539   .0144096     1.75   0.080     -.002995    .0535028
+        age1 |  -.0294592   .0268954    -1.10   0.273    -.0821858    .0232673
+        age2 |  -.0040518   .0193685    -0.21   0.834    -.0420224    .0339189
+        age3 |  -.0018747   .0184424    -0.10   0.919    -.0380298    .0342803
+        age4 |   .0139324   .0192952     0.72   0.470    -.0238944    .0517592
+       _cons |    .655906   .0175059    37.47   0.000      .621587    .6902251
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>The randomization appears effective: there is no statistically significant relationship between assignment and any of the included covariates.</p>
+<pre><code>. regress treatment highschool black hispanic married age1 age2 age3 age4 , robust
+
+Linear regression                               Number of obs     =      5,102
+                                                F(8, 5093)        =       3.59
+                                                Prob &gt; F          =     0.0004
+                                                R-squared         =     0.0055
+                                                Root MSE          =     .49241
+
+------------------------------------------------------------------------------
+             |               Robust
+   treatment |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  highschool |   .0411826   .0154589     2.66   0.008     .0108764    .0714888
+       black |   .0211274   .0164785     1.28   0.200    -.0111775    .0534323
+    hispanic |   .0463661   .0239886     1.93   0.053    -.0006619     .093394
+     married |    .049056   .0151514     3.24   0.001     .0193527    .0787594
+        age1 |  -.0649827   .0273893    -2.37   0.018    -.1186775   -.0112879
+        age2 |  -.0474878   .0201805    -2.35   0.019    -.0870503   -.0079254
+        age3 |  -.0236803   .0193862    -1.22   0.222    -.0616856     .014325
+        age4 |  -.0399759    .020261    -1.97   0.049    -.0796962   -.0002557
+       _cons |   .3913303   .0183052    21.38   0.000     .3554442    .4272165
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>Treated and untreated individuals appear significantly different. I don&rsquo;t know what these variables mean, but I can say that treated iniviuals have higher values of &ldquo;high school&rdquo; and &ldquo;married&rdquo; (I&rsquo;m assuming this is whether someone finished HS and whether they are married with mean imputation?). I also don&rsquo;t know what the age groups mean, so while there appear to be significant differences by age, I don&rsquo;t know what those mean either.</p>
+<pre><code>. regress earnings treatment, robust
+
+Linear regression                               Number of obs     =      5,102
+                                                F(1, 5100)        =      51.15
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.0100
+                                                Root MSE          =      19444
+
+------------------------------------------------------------------------------
+             |               Robust
+    earnings |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   treatment |   3970.212   555.1287     7.15   0.000     2881.921    5058.502
+       _cons |   17485.29   351.3664    49.76   0.000     16796.46    18174.12
+------------------------------------------------------------------------------
+
+. regress earnings treatment highschool black hispanic married age1 age2 age3 age4, robust
+
+Linear regression                               Number of obs     =      5,102
+                                                F(9, 5092)        =      34.07
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.0590
+                                                Root MSE          =      18972
+
+------------------------------------------------------------------------------
+             |               Robust
+    earnings |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   treatment |   3550.248   543.0626     6.54   0.000     2485.612    4614.884
+  highschool |   4423.959   572.5744     7.73   0.000     3301.467    5546.451
+       black |   -3236.62   615.3915    -5.26   0.000    -4443.052   -2030.188
+    hispanic |  -406.1806   892.4761    -0.46   0.649    -2155.818    1343.456
+     married |   7027.211   626.5026    11.22   0.000     5798.997    8255.425
+        age1 |  -3650.869   984.0853    -3.71   0.000    -5580.099   -1721.639
+        age2 |  -1048.239   779.1217    -1.35   0.179    -2575.653    479.1741
+        age3 |   338.1283   727.5524     0.46   0.642    -1088.187    1764.444
+        age4 |   1886.905   776.5654     2.43   0.015     364.5031    3409.307
+       _cons |   13028.35   684.6695    19.03   0.000     11686.11     14370.6
+------------------------------------------------------------------------------
+
+</code></pre>
+<p>This regression does not have a causal interpretation, because treatment is not randomized (only <em>assignment</em> to treatment is). In order to interpret this as causal, we would have to assume that treatment is plausibly random, conditional on the listed covariates.</p>
+<pre><code>. regress earnings assignment, robust
+
+Linear regression                               Number of obs     =      5,102
+                                                F(1, 5100)        =       3.86
+                                                Prob &gt; F          =     0.0496
+                                                R-squared         =     0.0007
+                                                Root MSE          =      19535
+
+------------------------------------------------------------------------------
+             |               Robust
+    earnings |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  assignment |   1116.585   568.5743     1.96   0.050     1.935206    2231.235
+       _cons |   18403.58   454.5567    40.49   0.000     17512.45     19294.7
+------------------------------------------------------------------------------
+
+. glob red_coef = _b[assignment]
+
+</code></pre>
+<p>This coefficient tells us the ITT causal effect: the effect of being offered the job training program on earnings.</p>
+<pre><code>. regress earnings assignment highschool black hispanic married age1 age2 age3 age4, robust
+
+Linear regression                               Number of obs     =      5,102
+                                                F(9, 5092)        =      29.25
+                                                Prob &gt; F          =     0.0000
+                                                R-squared         =     0.0515
+                                                Root MSE          =      19047
+
+------------------------------------------------------------------------------
+             |               Robust
+    earnings |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  assignment |   902.2945   554.0065     1.63   0.103    -183.7965    1988.386
+  highschool |   4570.996   574.8363     7.95   0.000      3444.07    5697.922
+       black |  -3166.975   615.5445    -5.14   0.000    -4373.707   -1960.243
+    hispanic |  -254.5056   897.0808    -0.28   0.777     -2013.17    1504.158
+     married |   7178.586   627.1904    11.45   0.000     5949.023    8408.148
+        age1 |  -3854.993   990.7453    -3.89   0.000     -5797.28   -1912.706
+        age2 |  -1213.177   782.3609    -1.55   0.121    -2746.941    320.5866
+        age3 |    255.749   730.9956     0.35   0.726    -1177.317    1688.815
+        age4 |    1732.41   778.5512     2.23   0.026     206.1146    3258.705
+       _cons |   13825.85   754.1339    18.33   0.000     12347.42    15304.28
+------------------------------------------------------------------------------
+
+</code></pre>
+<p><strong>• Given your answer to the previous question, why would you want to include these covariates?</strong></p>
+<p>With the addition of these covariates, the coefficient on assignment decreases and loses its statistical significance.</p>
+<h2><a href="#iv-and-late" id="iv-and-late">IV and LATE</a></h2>
+<p><strong>Types</strong></p>
+<pre><code>. tab treatment assignment, col
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+           |      assignment
+ treatment |         0          1 |     Total
+-----------+----------------------+----------
+         0 |     1,684      1,282 |     2,966 
+           |     98.88      37.72 |     58.13 
+-----------+----------------------+----------
+         1 |        19      2,117 |     2,136 
+           |      1.12      62.28 |     41.87 
+-----------+----------------------+----------
+     Total |     1,703      3,399 |     5,102 
+           |    100.00     100.00 |    100.00 
+
+</code></pre>
+<p>Assuming no defiers, I would estimate that about 1.12% of people are always-takers, 37.72% of people are never-takers, and the remaining 61.16% of people are compliers.</p>
+<p><strong>LATE</strong></p>
+<p>I could estimate the coefficient on treatment in IV by dividing the coefficient on assignment from the reduced regression (1117) by the proportion of compliers (.6116), which would be 1826.</p>
+<pre><code>. ivregress 2sls earnings (treatment=assignment), vce(robust)
+
+Instrumental variables (2SLS) regression          Number of obs   =      5,102
+                                                  Wald chi2(1)    =       3.87
+                                                  Prob &gt; chi2     =     0.0492
+                                                  R-squared       =     0.0071
+                                                  Root MSE        =      19469
+
+------------------------------------------------------------------------------
+             |               Robust
+    earnings |      Coef.   Std. Err.      z    P&gt;|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   treatment |   1825.459   927.9389     1.97   0.049     6.732185    3644.186
+       _cons |   18383.21   462.9362    39.71   0.000     17475.87    19290.55
+------------------------------------------------------------------------------
+Instrumented:  treatment
+Instruments:   assignment
+
+</code></pre>
+<p>The coefficients match!</p>
+<p>This regression has a causal interpretation, describing the local average treatment effect of the training program on earnings for people who, when offered such a training, attend.</p>
+<p>On the whole, I think that this treatment effect is broadly helpful: it is finding the effect on precisely the type of people who want training enough to take it if it&rsquo;s offered. These are the type of people that job training programs are typically interested in: people who have the motivation but lack specific knowledge that the training can provide.</p>
+<pre><code>. su earnings if treatment==0 &amp; assignment==1
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+    earnings |      1,282    16216.22    19476.61          0     155760
+
+</code></pre>
+<p>The average earnings among never-takers is about 16,200 dollars.</p>
