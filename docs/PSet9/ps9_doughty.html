@@ -53,8 +53,7 @@ Updated: 15 April 2021</p>
 <p><strong>OLS and the Reduced Form</strong></p>
 <pre><code>. use &quot;${datapath}card.dta&quot;, clear
 
-. regress lwage educ exper expersq smsa black married reg661 reg662 reg663 reg664 reg665 reg666
-&gt;  reg667 reg668, robust
+. regress lwage educ exper expersq smsa black married reg661 - reg668, robust
 
 Linear regression                               Number of obs     =      3,003
                                                 F(14, 2988)       =     103.13
@@ -87,8 +86,7 @@ Linear regression                               Number of obs     =      3,003
 <p>The coefficient on education, 0.072, indicates that an additional year of education is associated with about a 7.51% higher wage, controlling for covariates.</p>
 <p>This coefficient cannot be interpreted causally due to the many possibilities for omitted variable bias, as many other things like family background or motivation could be correlated with both educational attainment and wages. I would anticipate that the coefficient is likely biased upward, as many indicators of family background or personal motivation would be positively associated with education and future wages.</p>
 <p>The reasoning is that, since most people do not live systematically by institutes of higher education, there is some quasi-random variation in proximity to college campuses. Additionally, there is likely an association between how close you are to a campus and likelihood of attending higher education. This means that proximity to campus can be used to identify some plausibly random variation in higher education attainment.</p>
-<pre><code>. regress lwage nearc4 exper expersq smsa black married reg661 reg662 reg663 reg664 reg665 reg6
-&gt; 66 reg667 reg668, robust
+<pre><code>. regress lwage nearc4 exper expersq smsa black married reg661 - reg668, robust
 
 Linear regression                               Number of obs     =      3,003
                                                 F(14, 2988)       =      61.58
@@ -121,8 +119,7 @@ Linear regression                               Number of obs     =      3,003
 <p>There is a statistically significant relationship between college proximity and earnings, conditional on other controls.</p>
 <p>In order for the IV strategy to be valid, we would need to accept that there is plausibly exogenous variation in college proximity: i.e. that it is random enough that we can estimate the effect of college proximity on education simply by regressing with covariates. We must also accept that proximity to college only affects earnings through educational attainment.</p>
 <p>I am not sure I believe this assumption. There is some likelihood that families who care about education might live closer to institutes of higher education, either by deliberate choice or simply because families that particularly emphasize college might settle around the place where they went to college. There is also the possible influence of being around a college on the quality of elementary and secondary educational quality, which may lead to an effect on later wages that is not mediated by educational attainment (off the argument that quality as well as quantity of education might have an effect on future wages). Additionally, colleges are not placed randomly and could have effects on local labor markets. What if the areas around colleges tend to have higher paying jobs all-around? Then there would be a direct connection between proximity to a college campus and wages.</p>
-<pre><code>. regress lwage nearc4 libcrd14 exper expersq smsa black married reg661 reg662 reg663 reg664 re
-&gt; g665 reg666 reg667 reg668, robust
+<pre><code>. regress lwage nearc4 libcrd14 exper expersq smsa black married reg661 - reg668, robust
 
 Linear regression                               Number of obs     =      2,990
                                                 F(15, 2974)       =      59.36
@@ -205,8 +202,8 @@ Linear regression                               Number of obs     =      2,657
 </code></pre>
 <p>Well, it appears that living near a 4-year-college has a statistically significant relationship with IQ and parents&rsquo; education. To me, this would indicate that a violation of the assumption that living near a college campus is plausibly random.</p>
 <pre><code>. foreach var in iq fatheduc motheduc {
-  2.         regress `var' nearc4 libcrd14 exper expersq smsa black married reg661 reg662 reg66
-&gt; 3 reg664 reg665 reg666 reg667 reg668, robust
+  2.         regress `var' nearc4 libcrd14 exper expersq smsa black married reg661 - reg668, ro
+&gt; bust
   3. } 
 
 Linear regression                               Number of obs     =      2,054
@@ -296,8 +293,7 @@ Linear regression                               Number of obs     =      2,643
 </code></pre>
 <p>After including these covariates, there is no longer a statistically significant relationship between living near a 4-year college and IQ or parents&rsquo; education. This indicates that, conditional on these covariates, living near a four-year-college campus may indeed be plausibly random. So I am more willing to believe the CIA.</p>
 <p><strong>The First Stage and IV</strong></p>
-<pre><code>. regress educ nearc4 libcrd14 exper expersq smsa black married reg661 reg662 reg663 reg664 reg
-&gt; 665 reg666 reg667 reg668, robust
+<pre><code>. regress educ nearc4 libcrd14 exper expersq smsa black married reg661 - reg668, robust
 
 Linear regression                               Number of obs     =      2,990
                                                 F(15, 2974)       =     252.34
@@ -327,11 +323,20 @@ Linear regression                               Number of obs     =      2,990
        _cons |   16.47965   .2072312    79.52   0.000     16.07332    16.88599
 ------------------------------------------------------------------------------
 
+. glob fs_coef = _b[nearc4]
+
+. test nearc4 = 0
+
+ ( 1)  nearc4 = 0
+
+       F(  1,  2974) =   10.40
+            Prob &gt; F =    0.0013
+
 </code></pre>
-<p>Living near a college campus does have a statistically significant relationship with education level, so I don&rsquo;t think the instrument is <em>too</em> weak. But by itself, variation in living near or far from a college campus only accounts for 2% of the variation in education level, so I&rsquo;m not fully convinced that it&rsquo;s a particularly strong instrument.</p>
+<p>Living near a college campus does have a statistically significant relationship with education level with an F statistic of 10, so I don&rsquo;t think the instrument is <em>too</em> weak. But this does just barely meet the cutoff, and by itself, variation in living near or far from a college campus only accounts for 2% of the variation in education level. Therefore, while I would not consider this instrument too weak, neither would I consider it particularly strong.</p>
 <p>I would predict that my coefficient will be the coefficient from the reduced form, 0.035, divided by the coefficient from the first stage, 0.258, or 0.136</p>
-<pre><code>. ivregress 2sls lwage (educ=nearc4) libcrd14 exper expersq smsa black married reg661 reg662 re
-&gt; g663 reg664 reg665 reg666 reg667 reg668, vce(robust)
+<pre><code>. ivregress 2sls lwage (educ=nearc4) libcrd14 exper expersq smsa black married reg661 - reg668,
+&gt;  vce(robust)
 
 Instrumental variables (2SLS) regression          Number of obs   =      2,990
                                                   Wald chi2(15)   =     924.24
@@ -365,7 +370,7 @@ Instruments:   libcrd14 exper expersq smsa black married reg661 reg662
                reg663 reg664 reg665 reg666 reg667 reg668 nearc4
 
 </code></pre>
-<p>I am surprised that these results are higher than the OLS results, indicating that the original results were negatively biased, implying some original omitted variable that would have been positively correlated with education and negatively correlated with earnings.</p>
+<p>I am surprised that these results are higher than the OLS results, indicating that the original results were negatively biased, implying some original omitted variable that would have been positively correlated with education and negatively correlated with earnings (or vice versa).</p>
 <p>My best explanation for this would be a violation of the assumption of constant treatment effects that started this section. I think it&rsquo;s plausible that the type of people whose higher education attainment decisions are responsive to physical location might benefit more from higher education. These are likely to be people facing significant financial burden to college who might have otherwise, as Card argued, stopped education &ldquo;too soon.&rdquo;</p>
 <h2><a href="#heterogeneous-treatment-effects" id="heterogeneous-treatment-effects">Heterogeneous Treatment Effects</a></h2>
 <pre><code>. use &quot;${datapath}jtpa.dta&quot;, clear
@@ -419,7 +424,7 @@ Linear regression                               Number of obs     =      5,102
 ------------------------------------------------------------------------------
 
 </code></pre>
-<p>Treated and untreated individuals appear significantly different. I don&rsquo;t know what these variables mean, but I can say that treated iniviuals have higher values of &ldquo;high school&rdquo; and &ldquo;married&rdquo; (I&rsquo;m assuming this is whether someone finished HS and whether they are married with mean imputation?). I also don&rsquo;t know what the age groups mean, so while there appear to be significant differences by age, I don&rsquo;t know what those mean either.</p>
+<p>Treated and untreated individuals appear significantly different. I don&rsquo;t exactly have a codebook, but I can say that treated iniviuals have higher values of &ldquo;high school&rdquo; and &ldquo;married&rdquo; (I&rsquo;m assuming this is whether someone finished HS and whether they are married with mean imputation?). I also don&rsquo;t know what the age groups mean, so while there appear to be significant differences by age, I don&rsquo;t know what those mean either.</p>
 <pre><code>. regress earnings treatment, robust
 
 Linear regression                               Number of obs     =      5,102
@@ -556,7 +561,7 @@ Instruments:   assignment
 
 </code></pre>
 <p>The coefficients match!</p>
-<p>This regression has a causal interpretation, describing the local average treatment effect of the training program on earnings for people who, when offered such a training, attend.</p>
+<p>This regression has a causal interpretation, describing the local average treatment effect of the training program on earnings for people who attend only when offered such a training.</p>
 <p>On the whole, I think that this treatment effect is broadly helpful: it is finding the effect on precisely the type of people who want training enough to take it if it&rsquo;s offered. These are the type of people that job training programs are typically interested in: people who have the motivation but lack specific knowledge that the training can provide.</p>
 <pre><code>. su earnings if treatment==0 &amp; assignment==1
 
