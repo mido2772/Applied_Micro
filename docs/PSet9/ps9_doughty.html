@@ -424,7 +424,7 @@ Linear regression                               Number of obs     =      5,102
 ------------------------------------------------------------------------------
 
 </code></pre>
-<p>Treated and untreated individuals appear significantly different. I don&rsquo;t exactly have a codebook, but I can say that treated iniviuals have higher values of &ldquo;high school&rdquo; and &ldquo;married&rdquo; (I&rsquo;m assuming this is whether someone finished HS and whether they are married with mean imputation?). I also don&rsquo;t know what the age groups mean, so while there appear to be significant differences by age, I don&rsquo;t know what those mean either.</p>
+<p>Treated and untreated individuals appear significantly different. I don&rsquo;t exactly have a codebook, but I can say that treated indiviuals appear to be more likely to have finished high school and more likely to be married (assuming that is the value of the &ldquo;high school&rdquo; and &ldquo;married&rdquo; dummies, with mean imputation?). I also don&rsquo;t know what the age groups mean, so while there appear to be significant differences by age, I don&rsquo;t know what those mean either.</p>
 <pre><code>. regress earnings treatment, robust
 
 Linear regression                               Number of obs     =      5,102
